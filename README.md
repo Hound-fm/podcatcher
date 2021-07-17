@@ -1,5 +1,5 @@
 <h1 align=center>
-  <img alt="Podcatcher" src="https://user-images.githubusercontent.com/14793624/126024385-e295ed31-35a7-4fe8-96ed-b46410cfa852.png" height="300px" />
+  <img alt="Podcatcher" src="https://user-images.githubusercontent.com/14793624/126025087-08fae6dd-e9d3-4eed-9f3a-aa15661553e3.png" width="580px" />
 </h1>
 <br/>
 <h3 align="center">
