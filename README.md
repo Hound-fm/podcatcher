@@ -10,4 +10,16 @@
 
 
 
-Work in progress...
+## Development 
+
+Install all dependencies:
+
+```shell
+poetry install
+```
+
+Format code:
+
+```shell
+poetry run black ./src
+```
