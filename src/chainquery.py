@@ -25,9 +25,11 @@ def filter_by_content_type(content_type=CONTENT_TYPE_AUDIO):
         ]
     )
 
+
 # Filter all content by audio duration:
 def filter_by_audio_duration(min=0):
     return Criterion.all([claim.audio_duration.notnull(), claim.audio_duration > min])
+
 
 # Filter invalid audio streams:
 def filter_invalid_streams():
@@ -39,6 +41,7 @@ def filter_invalid_streams():
             # claim.publisher_id.notin(BLOCKED_CHANNELS),
         ]
     )
+
 
 # Query for searching all audio content
 def bulk_fetch_streams():
@@ -84,13 +87,12 @@ def bulk_fetch_streams():
 def formatQuery(q):
     return q.get_sql().replace('"', "")
 
+
 # Default options for queries
-default_query_options = {
-    "limit": 100
-}
+default_query_options = {"limit": 100}
 
 # Function to run a query and retrive data from the chainquery public api
-def query(q, options = default_query_options):
+def query(q, options=default_query_options):
     try:
         # Apply options
         q = q.limit(options["limit"])
