@@ -163,6 +163,14 @@ optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
 [[package]]
+name = "pygments"
+version = "2.9.0"
+description = "Pygments is a syntax highlighting package written in Python."
+category = "main"
+optional = false
+python-versions = ">=3.5"
+
+[[package]]
 name = "pypika"
 version = "0.48.7"
 description = "A SQL query builder API for Python"
@@ -238,7 +246,7 @@ python-versions = ">=3.6"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "6aec002ca213db030db52d4ece487d134a49a3114e112ff639669bdb5f3306b0"
+content-hash = "8c4ddf05bcb91219cecbec3896d64784611465bc04de8263895b54d48a9aff06"
 
 [metadata.files]
 anyio = [
@@ -339,6 +347,10 @@ pandas = [
 pathspec = [
     {file = "pathspec-0.8.1-py2.py3-none-any.whl", hash = "sha256:aa0cb481c4041bf52ffa7b0d8fa6cd3e88a2ca4879c533c9153882ee2556790d"},
     {file = "pathspec-0.8.1.tar.gz", hash = "sha256:86379d6b86d75816baba717e64b1a3a3469deb93bb76d613c9ce79edc5cb68fd"},
+]
+pygments = [
+    {file = "Pygments-2.9.0-py3-none-any.whl", hash = "sha256:d66e804411278594d764fc69ec36ec13d9ae9147193a1740cd34d272ca383b8e"},
+    {file = "Pygments-2.9.0.tar.gz", hash = "sha256:a18f47b506a429f6f4b9df81bb02beab9ca21d0a5fee38ed15aef65f0545519f"},
 ]
 pypika = [
     {file = "pypika-0.48.7.tar.gz", hash = "sha256:52c67a8e6a3f1156e96cfd3989c07a4b03603391b0982edd2b56854a4d752eba"},
