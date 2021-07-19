@@ -1,3 +1,7 @@
+# WARNING: Low peformance and some litimations.
+# TODO: Migrate to custom "Hub" and discard any external api usage.
+# https://github.com/lbryio/hub
+
 import json
 import time
 import httpx
@@ -7,8 +11,8 @@ from constants import LBRY_API, LBRY_TOKEN, LBRY_COM_API
 
 # Global values
 TIMEOUT_RETRY = 0
-TIMEOUT_DELAY = 24
-MAX_TIMEOUT_RETRY = 3
+TIMEOUT_DELAY = 25
+MAX_TIMEOUT_RETRY = 5
 
 
 def api_get_request(url, url_params={}, payload={}):
