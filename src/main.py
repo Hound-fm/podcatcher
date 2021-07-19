@@ -1,5 +1,7 @@
 # Command line interface
 import click
+from analysis import full_scan
+import asyncio
 
 # Init cli
 @click.group()
@@ -10,4 +12,4 @@ def cli():
 # Commands:
 @cli.command()
 def sync():
-    pass
+    full_scan()

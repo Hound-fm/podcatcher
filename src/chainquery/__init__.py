@@ -15,7 +15,7 @@ def formatQuery(q):
 
 
 # Default options for queries
-default_query_options = {"limit": 100}
+default_query_options = {"limit": 100, "offset": 0}
 
 # Function to run a query and retrive data from the chainquery public api
 def query(q, options=default_query_options):
@@ -24,6 +24,7 @@ def query(q, options=default_query_options):
     try:
         # Apply options
         q = q.limit(options["limit"])
+        q = q.offset(options["offset"])
         # Preapare string for url encoding
         queryString = formatQuery(q)
         # Send the sql query as url parameter
@@ -39,6 +40,7 @@ def query(q, options=default_query_options):
 
     # Handle request errors
     except httpx.RequestError as exc:
+        print(exc)
         print(f"An error occurred while requesting {exc.request.url!r}.")
 
     # Handle http request errors

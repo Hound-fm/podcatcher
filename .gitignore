@@ -131,3 +131,6 @@ dmypy.json
 # Data files
 data/**
 !data/.gitkeep
+!data/genres.json
+!data/block_list.json
+!data/multilingual.json
