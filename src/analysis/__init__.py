@@ -2,6 +2,7 @@ import time
 import asyncio
 import pandas as pd
 from lbry import lbry_proxy
+from logger import log
 from dataset import build_dataset_chunk
 from dataset.loader import Dataset_chunk_loader
 from constants import STREAM_TYPE
@@ -24,14 +25,19 @@ def full_scan():
         success = process_dataset_chunk()
         # Dataset chunk was processed successfully
         if success:
-            print("chunk: ", dataset_chunk_index)
+            log.info(f"Tasks completed for chunk on index: {dataset_chunk_index}")
             # Delay for timeout errors
             time.sleep(delay)
             # Load next dataset chunk
             full_scan()
         else:
-            # Handle error
-            print("Failed to process chunk ", dataset_chunk_index)
+            # Handle process error
+            log.error(
+                f"Failed to process dataset chunk on index: {dataset_chunk_index}"
+            )
+    else:
+        # Handle load error
+        log.error(f"Failed to load dataset chunk on index: {dataset_chunk_index}")
 
 
 def process_dataset_chunk():

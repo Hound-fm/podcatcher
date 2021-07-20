@@ -8,6 +8,7 @@ import httpx
 import numpy as np
 from utils import unix_time_millis
 from constants import LBRY_API, LBRY_TOKEN, LBRY_COM_API
+from logger import log
 
 # Global values
 TIMEOUT_RETRY = 0
@@ -44,18 +45,19 @@ def lbry_proxy(method, payload_data, retry=0):
         res = httpx.post(LBRY_API, headers=headers, json=payload).json()
     # Handle http request errors
     except httpx.HTTPStatusError as exc:
-        print(
+        log.error(
             f"Error response {exc.response.status_code} while requesting {exc.request.url!r}."
         )
     # Handle timeout errors
     except httpx.TimeoutException as exc:
-        print(f"HTTP Exception for {exc.request.url} - {exc}")
-        time.sleep(TIMEOUT_DELAY)
         if TIMEOUT_RETRY < MAX_TIMEOUT_RETRY:
+            time.sleep(TIMEOUT_DELAY)
             return lbry_proxy(method, payload_data, TIMEOUT_RETRY)
+        else:
+            log.error(f"HTTP Exception for {exc.request.url} - {exc}")
     # Handle request errors
     except httpx.RequestError as exc:
-        print(f"An error occurred while requesting {exc.request.url!r}.")
+        log.error(f"An error occurred while requesting {exc.request.url!r}.")
 
     return res
 
@@ -63,12 +65,17 @@ def lbry_proxy(method, payload_data, retry=0):
 def api_post_request(url, payload={}):
     try:
         # Initial request test
-        res = req.post(LBRY_COM_API + url, data=payload)
-        res.raise_for_status()
+        res = httpx.post(LBRY_COM_API + url, data=payload)
         # Parse to json and return results
         return res.json()
-    except NameError:
-        print(NameError)
+    # Handle http request errors
+    except httpx.HTTPStatusError as exc:
+        log.error(
+            f"Error response {exc.response.status_code} while requesting {exc.request.url!r}."
+        )
+    # Handle request errors
+    except httpx.RequestError as exc:
+        log.error(f"An error occurred while requesting {exc.request.url!r}.")
 
 
 # Get filtered list
@@ -78,7 +85,7 @@ def get_filtered_outpoints():
         filtered = api_get_request("file/list_filtered")["outpoints"]
         return set([*blocked, *filtered])
     except NameError:
-        print("failed retrive blacklisted outpoints:", NameError)
+        log.error("Failed retrive blacklisted outpoints")
 
 
 # Expose filtered list
@@ -92,5 +99,5 @@ def get_view_counts(claim_ids):
         return view_counts["data"]
 
     except NameError:
-        print(NameError)
+        log.error("Failed to retrive view counts")
         return np.zeros(len(claim_ids))
