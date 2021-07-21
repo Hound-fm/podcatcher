@@ -42,7 +42,23 @@ def get_current_time():
     return datetime.now().astimezone().replace(microsecond=0).isoformat()
 
 
-def write_json_file(json_data, file_name):
-    file_path = path.join("data", file_name)
+def load_df_cache(name):
+    data = pd.read_csv(f"data/cache/{name}")
+    return data
+
+
+def load_json_cache(json_data, file_name):
+    file_path = path.join("data/cache", f"{file_name}.json")
+    with open(file_path, "r") as f:
+        data = json.load(f)
+        return data
+
+
+def save_df_cache(df, name):
+    df.to_csv(f"data/cache/{name}", index=False)
+
+
+def save_json_cache(json_data, file_name):
+    file_path = path.join("data/cache", f"{file_name}.json")
     with open(file_path, "wt") as f:
         json.dump(json_data, f, sort_keys=True, indent=2, ensure_ascii=True)

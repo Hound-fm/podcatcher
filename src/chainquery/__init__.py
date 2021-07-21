@@ -6,8 +6,15 @@
 # https://github.com/lbryio/hub
 
 # Import dependencies
+import time
 import httpx
 from constants import CHAINQUERY_API
+from logger import log
+
+# Global values
+TIMEOUT_RETRY = 0
+TIMEOUT_DELAY = 30
+MAX_TIMEOUT_RETRY = 5
 
 # Fix issues with chainquery api and pypika query format:
 def formatQuery(q):
@@ -18,7 +25,7 @@ def formatQuery(q):
 default_query_options = {"limit": 100, "offset": 0}
 
 # Function to run a query and retrive data from the chainquery public api
-def query(q, options=default_query_options):
+def query(q, options=default_query_options, retry=0):
     # Query response
     res = None
     try:
@@ -38,13 +45,20 @@ def query(q, options=default_query_options):
         # Retrive response data
         return data
 
-    # Handle request errors
-    except httpx.RequestError as exc:
-        print(exc)
-        print(f"An error occurred while requesting {exc.request.url!r}.")
-
     # Handle http request errors
     except httpx.HTTPStatusError as exc:
-        print(
+        log.error(
             f"Error response {exc.response.status_code} while requesting {exc.request.url!r}."
         )
+    # Handle timeout errors
+    except httpx.TimeoutException as exc:
+        global TIMEOUT_RETRY
+        TIMEOUT_RETRY = retry + 1
+        if TIMEOUT_RETRY < MAX_TIMEOUT_RETRY:
+            time.sleep(TIMEOUT_DELAY * TIMEOUT_RETRY * 0.75)
+            return query(q, options, TIMEOUT_RETRY)
+        else:
+            log.error(f"HTTP Exception for {exc.request.url} - {exc}")
+    # Handle request errors
+    except httpx.RequestError as exc:
+        log.error(f"An error occurred while requesting {exc.request.url!r}.")

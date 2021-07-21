@@ -128,9 +128,7 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# Data files
-data/**
-!data/.gitkeep
-!data/genres.json
-!data/block_list.json
-!data/multilingual.json
+# Cache files
+data/cache/**
+
+!**/.gitkeep

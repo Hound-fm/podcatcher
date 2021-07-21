@@ -1,15 +1,22 @@
 # Command line interface
 import click
-from analysis import full_scan
 import asyncio
+from analysis import full_scan
 
-# Init cli
+# Main command
 @click.group()
 def cli():
     pass
 
 
-# Commands:
+# Initial sync
 @cli.command()
 def sync():
     full_scan()
+
+
+# Retry failed sync
+@cli.command()
+def retry_sync():
+    pass
+    # full_scan()

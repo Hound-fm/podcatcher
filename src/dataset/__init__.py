@@ -1,7 +1,7 @@
 # Build json datasets from chainquery results
 import time
 import asyncio
-from utils import unique_array, write_json_file, get_current_time
+from utils import unique_array, save_json_cache, get_current_time
 from chainquery import query, queries
 
 from constants import (
@@ -13,16 +13,10 @@ from constants import (
 default_chunk_index = 0
 default_chunk_size = 100
 
-# Build tags dataset
-# async def build_tags_dataset(id_list):
-# results = query(queries.bulk_fetch_tags(id_list))
-# write_json_file(results, "tags.json")
-
-
 # Build channles dataset
 def build_channels_dataset(id_list):
     results = query(queries.bulk_fetch_channels(id_list))
-    write_json_file(results, "channels.json")
+    save_json_cache(results, "channels")
 
 
 # Build stream dataset
@@ -32,7 +26,7 @@ def build_streams_dataset(
 ):
     query_options = {"limit": chunk_size, "offset": chunk_size * chunk_index}
     results = query(queries.bulk_fetch_streams(), query_options)
-    write_json_file(results, "streams.json")
+    save_json_cache(results, "streams")
     return results
 
 

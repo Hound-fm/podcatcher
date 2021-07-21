@@ -12,7 +12,7 @@ from logger import log
 
 # Global values
 TIMEOUT_RETRY = 0
-TIMEOUT_DELAY = 25
+TIMEOUT_DELAY = 30
 MAX_TIMEOUT_RETRY = 5
 
 
@@ -30,8 +30,6 @@ def api_get_request(url, url_params={}, payload={}):
 
 
 def lbry_proxy(method, payload_data, retry=0):
-    global TIMEOUT_RETRY
-    TIMEOUT_RETRY = retry + 1
     res = None
     headers = {"Content-Type": "application/json-rpc", "user-agent": "my-app/0.0.1"}
     payload = {
@@ -50,8 +48,10 @@ def lbry_proxy(method, payload_data, retry=0):
         )
     # Handle timeout errors
     except httpx.TimeoutException as exc:
+        global TIMEOUT_RETRY
+        TIMEOUT_RETRY = retry + 1
         if TIMEOUT_RETRY < MAX_TIMEOUT_RETRY:
-            time.sleep(TIMEOUT_DELAY)
+            time.sleep(TIMEOUT_DELAY * TIMEOUT_RETRY * 0.75)
             return lbry_proxy(method, payload_data, TIMEOUT_RETRY)
         else:
             log.error(f"HTTP Exception for {exc.request.url} - {exc}")

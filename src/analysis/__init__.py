@@ -1,17 +1,19 @@
 import time
 import asyncio
 import pandas as pd
-from lbry import lbry_proxy
 from logger import log
 from dataset import build_dataset_chunk
 from dataset.loader import Dataset_chunk_loader
-from constants import STREAM_TYPE
+from constants import STREAM_TYPE, CHANNEL_TYPE
+from sync import sync_stream_data
+from status import update_status
 from .tags import process_tags
+from .podcasts import process_podcasts, is_podcast_series
 
 # Global values
-dataset_chunk_index = -1
+dataset_chunk_index = 45
 dataset_chunk_size = 1000
-delay = 25
+delay = 30
 
 # Scan all existent claims
 def full_scan():
@@ -39,6 +41,9 @@ def full_scan():
         # Handle load error
         log.error(f"Failed to load dataset chunk on index: {dataset_chunk_index}")
 
+    # Update sync status
+    update_status(False, dataset_chunk_index)
+
 
 def process_dataset_chunk():
     # Load dataset chunk
@@ -46,10 +51,17 @@ def process_dataset_chunk():
     # Not enough data to process chunk
     if not chunk.valid:
         return False
+    # Check channel type
+    chunk.df_channels.loc[
+        is_podcast_series(chunk.df_channels), "channel_type"
+    ] = CHANNEL_TYPE["PODCAST_SERIES"]
+
     # Merge channel data
     chunk.df_streams = pd.merge(
         chunk.df_streams,
-        chunk.df_channels[["publisher_id", "publisher_name", "publisher_title"]],
+        chunk.df_channels[
+            ["publisher_id", "publisher_name", "publisher_title", "channel_type"]
+        ],
         on="publisher_id",
     )
     # Get cannonical_url
@@ -64,13 +76,12 @@ def process_dataset_chunk():
     # Process stream tags
     df_tags = process_tags(chunk.df_streams)
     # Merge tags data
+    chunk.df_streams = chunk.df_streams.drop(columns="tags")
     chunk.df_streams = pd.merge(chunk.df_streams, df_tags, on="claim_id")
     # Filter uknown types
     chunk.df_streams = chunk.df_streams.loc[chunk.df_streams["stream_type"].notnull()]
     # Podcasts
-    podcasts = chunk.df_streams.loc[
-        chunk.df_streams["stream_type"] == STREAM_TYPE["PODCAST_EPISODE"]
-    ]
+    process_podcasts(chunk)
     return True
 
 
@@ -90,88 +101,3 @@ def get_cannonical_url(df):
     )
     df_claims["cannonical_url"] = df_claims["cannonical_url"].astype(str)
     return df_claims["cannonical_url"]
-
-
-# Load unavailable data of streams from sdk
-def sync_stream_data(df):
-    # New dataframe
-    df_results = df.copy()
-    # Columns
-    tags = []
-    status = []
-    licenses = []
-    reposted = []
-    trending = []
-    languages = []
-    perm_urls = []
-
-    # Sdk api request
-    urls = df_results["cannonical_url"].tolist()
-    payload = {"urls": urls}
-    res = lbry_proxy("resolve", payload)
-    if res:
-        if "error" in res:
-            print(res["error"])
-            return pd.DataFrame()
-        if "result" in res:
-            res = res["result"]
-    else:
-        return pd.DataFrame()
-
-    for url in urls:
-        # Claim metadata
-        metadata = res[url]
-        # default values
-        claim_tags = []
-        claim_status = "spent"
-        claim_license = None
-        claim_reposted = 0
-        claim_trending = 0
-        claim_perm_url = None
-        claim_languages = []
-        claim_perm_url = None
-
-        # Get claim status
-        if "claim_op" in metadata:
-            claim_status = "active"
-
-        # Get claim stats
-        if "meta" in metadata:
-            if "reposted" in metadata["meta"]:
-                claim_reposted = metadata["meta"]["reposted"]
-            if "trending_mixed" in metadata["meta"]:
-                claim_trending = metadata["meta"]["trending_mixed"]
-
-        # Get claim value metadata
-        if "value" in metadata:
-            if "license" in metadata["value"]:
-                claim_license = metadata["value"]["license"]
-            if "languages" in metadata["value"]:
-                claim_languages = metadata["value"]["languages"]
-            if "tags" in metadata["value"]:
-                claim_tags = set(metadata["value"]["tags"])
-
-        # Get claim url
-        if "permanent_url" in metadata:
-            claim_perm_url = metadata["permanent_url"]
-
-        # Fill columns values
-        tags.append(claim_tags)
-        status.append(claim_status)
-        licenses.append(claim_license)
-        reposted.append(claim_reposted)
-        trending.append(claim_trending)
-        languages.append(claim_languages)
-        perm_urls.append(claim_perm_url)
-
-    # Append columns
-    df_results["tags"] = tags
-    df_results["status"] = status
-    df_results["license"] = licenses
-    df_results["reposted"] = reposted
-    df_results["trending"] = trending
-    df_results["languages"] = languages
-    df_results["perm_url"] = perm_urls
-
-    # Return new dataframe
-    return df_results

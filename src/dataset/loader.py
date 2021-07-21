@@ -9,7 +9,7 @@ from vocabulary import GENRES, MULTILINGUAL
 
 # Create a dataframe from json
 def df_json(file):
-    json_path = path.join("data", file)
+    json_path = path.join("data/cache", file)
     return pd.read_json(json_path)
 
 
@@ -70,10 +70,9 @@ class Dataset_chunk_loader:
     def prepare_channels_data(self, df):
         # Format channel title
         df_channels = df.copy()
+        df_channels["channel_type"] = np.nan
         df_channels["publisher_title"] = df_channels["publisher_title"].fillna("")
         df_channels["publisher_title"] = df_channels["publisher_title"].astype("string")
-        df_channels["publisher_title"] = df_channels["publisher_title"].str.lower()
-        df_channels["publisher_title"] = df_channels["publisher_title"].str.strip()
         # Filters
         filter_mask = (df_channels.publisher_title.str.len() > 0) & (
             ~df_channels.publisher_title.str.contains("free music")
