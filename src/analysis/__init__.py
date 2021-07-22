@@ -1,27 +1,34 @@
 import time
-import asyncio
 import pandas as pd
 from logger import log
 from dataset import build_dataset_chunk
 from dataset.loader import Dataset_chunk_loader
-from constants import STREAM_TYPE, CHANNEL_TYPE
-from sync import sync_stream_data
 from status import update_status
-from .tags import process_tags
-from .podcasts import process_podcasts, is_podcast_series
+from .channels import process_channels
+from .streams import process_streams
+from .music import process_music
+from .podcasts import process_podcasts
+from .constants import DEFAULT_CHUNK_SIZE, DEFAULT_CHUNK_INDEX, DEFAULT_TIMOUT_DELAY
 
 # Global values
-dataset_chunk_index = 45
-dataset_chunk_size = 1000
-delay = 30
+dataset_chunk_index = 10  # or DEFAULT_CHUNK_INDEX
+dataset_chunk_size = DEFAULT_CHUNK_SIZE
+delay = DEFAULT_TIMOUT_DELAY
+
+# Stop scan
+def stop_scan():
+    update_status(False, dataset_chunk_index)
+    # Handle process error
+    log.error(f"Failed to process dataset chunk on index: {dataset_chunk_index}")
+    raise SystemExit(0)
+
 
 # Scan all existent claims
-def full_scan():
-    global dataset_chunk_size
+def start_scan():
     global dataset_chunk_index
     dataset_chunk_index += 1
     ready = build_dataset_chunk(dataset_chunk_index, dataset_chunk_size)
-
+    # Build completed
     if ready:
         # Process dataset chunk
         success = process_dataset_chunk()
@@ -31,18 +38,21 @@ def full_scan():
             # Delay for timeout errors
             time.sleep(delay)
             # Load next dataset chunk
-            full_scan()
+            start_scan()
         else:
-            # Handle process error
-            log.error(
-                f"Failed to process dataset chunk on index: {dataset_chunk_index}"
-            )
+            stop_scan()
     else:
-        # Handle load error
-        log.error(f"Failed to load dataset chunk on index: {dataset_chunk_index}")
-
+        stop_scan()
     # Update sync status
     update_status(False, dataset_chunk_index)
+
+
+# Scan all existent claims
+def full_scan():
+    # Reset chunk index
+    global dataset_chunk_index
+    # dataset_chunk_index = 0
+    start_scan()
 
 
 def process_dataset_chunk():
@@ -51,53 +61,26 @@ def process_dataset_chunk():
     # Not enough data to process chunk
     if not chunk.valid:
         return False
-    # Check channel type
-    chunk.df_channels.loc[
-        is_podcast_series(chunk.df_channels), "channel_type"
-    ] = CHANNEL_TYPE["PODCAST_SERIES"]
-
-    # Merge channel data
+    # Process channels
+    chunk.df_channels = process_channels(chunk.df_channels)
+    if chunk.df_channels.empty:
+        return True
+    # Merge channes datas
     chunk.df_streams = pd.merge(
         chunk.df_streams,
         chunk.df_channels[
-            ["publisher_id", "publisher_name", "publisher_title", "channel_type"]
+            ["channel_id", "channel_name", "channel_title", "channel_type"]
         ],
-        on="publisher_id",
+        on="channel_id",
     )
-    # Get cannonical_url
-    chunk.df_streams["cannonical_url"] = get_cannonical_url(chunk.df_streams)
-    # Get updated data from sdk
-    chunk.df_streams = sync_stream_data(chunk.df_streams)
-    # SDK failed to sync data
     if chunk.df_streams.empty:
-        return False
-    # Filter spent / inactive claims
-    chunk.df_streams = chunk.df_streams.loc[chunk.df_streams["status"] == "active"]
-    # Process stream tags
-    df_tags = process_tags(chunk.df_streams)
-    # Merge tags data
-    chunk.df_streams = chunk.df_streams.drop(columns="tags")
-    chunk.df_streams = pd.merge(chunk.df_streams, df_tags, on="claim_id")
-    # Filter uknown types
-    chunk.df_streams = chunk.df_streams.loc[chunk.df_streams["stream_type"].notnull()]
-    # Podcasts
-    process_podcasts(chunk)
-    return True
-
-
-def get_cannonical_url(df):
-    df_claims = df.copy()
-    df_claims = df_claims[["claim_id", "name", "publisher_name", "publisher_id"]]
-    df_claims["claim_char"] = df_claims["claim_id"].str[0]
-    df_claims["publisher_char"] = df_claims["publisher_id"].str.slice(0, 2)
-    df_claims["cannonical_url"] = (
-        +df_claims["publisher_name"].astype(str)
-        + "#"
-        + df_claims["publisher_char"].astype(str)
-        + "/"
-        + df_claims["name"].astype(str)
-        + "#"
-        + df_claims["claim_char"].astype(str)
-    )
-    df_claims["cannonical_url"] = df_claims["cannonical_url"].astype(str)
-    return df_claims["cannonical_url"]
+        return True
+    # Process all streams
+    chunk.df_streams = process_streams(chunk.df_streams)
+    # Process podcast series and episodes
+    if not chunk.df_streams.empty:
+        process_music(chunk)
+        process_podcasts(chunk)
+        # Success status
+        return True
+    return False

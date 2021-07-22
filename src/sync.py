@@ -3,7 +3,7 @@ from lbry import lbry_proxy
 
 
 # Load unavailable data of streams from sdk
-def sync_chhanel_data(df):
+def sync_channels_data(df):
     # New dataframe
     df_results = df.copy()
 
@@ -79,7 +79,7 @@ def sync_chhanel_data(df):
 
 
 # Load unavailable data of streams from sdk
-def sync_stream_data(df):
+def sync_streams_data(df):
     # New dataframe
     df_results = df.copy()
 
@@ -134,7 +134,9 @@ def sync_stream_data(df):
         # Get claim value metadata
         if "value" in metadata:
             if "license" in metadata["value"]:
-                claim_license = metadata["value"]["license"]
+                license = metadata["value"]["license"].lower()
+                if (len(license) > 3) and (license != "none"):
+                    claim_license = metadata["value"]["license"]
             if "languages" in metadata["value"]:
                 claim_languages = metadata["value"]["languages"]
             if "tags" in metadata["value"]:

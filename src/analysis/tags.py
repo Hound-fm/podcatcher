@@ -1,24 +1,36 @@
 import numpy as np
 import pandas as pd
 from utils import unique_clean_list
-from constants import STREAM_TYPE, STREAM_TYPES, FILTER_TAGS
+from constants import (
+    CHANNEL_TYPE,
+    CHANNEL_TYPES,
+    STREAM_TYPE,
+    STREAM_TYPES,
+    FILTER_TAGS,
+)
 from vocabulary import GENRES, MULTILINGUAL
+
+CLAIM_TYPE = "stream"
 
 # Select dominant stream type
 def select_dominant_category(categories):
-    c = pd.Categorical(categories, ordered=True, categories=STREAM_TYPES)
+    CATEGORIES_LIST = STREAM_TYPES if (CLAIM_TYPE == "stream") else CHANNEL_TYPES
+    c = pd.Categorical(categories, ordered=True, categories=CATEGORIES_LIST)
     return c.max()
 
 
 # Select known genres
-def select_dominant_genres(df_tags):
+def select_dominant_genres(df_tags, claim_type="stream"):
+    COLUMN_TYPE = f"{claim_type}_type"
+    CATEGORIES = STREAM_TYPE if (claim_type == "stream") else CHANNEL_TYPE
+
     conditions = [
         # This tag defines the audiobook genre
-        df_tags["stream_type"] == STREAM_TYPE["AUDIOBOOK"],
+        df_tags[COLUMN_TYPE] == CATEGORIES["AUDIOBOOK"],
         # This tag defines the podcast genre
-        df_tags["stream_type"] == STREAM_TYPE["PODCAST_EPISODE"],
+        df_tags[COLUMN_TYPE] == CATEGORIES["PODCAST"],
         # This tag defines the music genre
-        df_tags["stream_type"] == STREAM_TYPE["MUSIC_RECORDING"],
+        df_tags[COLUMN_TYPE] == CATEGORIES["MUSIC"],
     ]
 
     # Select dominant column
@@ -36,8 +48,9 @@ def select_dominant_genres(df_tags):
     return np.select(conditions, choicelist=choices, default=all_genres)
 
 
-def process_tags(df):
-    df_tags = df[["tags", "claim_id"]].explode("tags")
+def process_tags(df, claim_type="stream"):
+    CLAIM_ID = "claim_id" if (claim_type == "stream") else "channel_id"
+    df_tags = df[["tags", CLAIM_ID]].explode("tags")
     df_tags = df_tags.rename(columns={"tags": "tag_name"})
     # Format tag name
     df_tags["tag_name"] = df_tags["tag_name"].astype(str)
@@ -46,36 +59,47 @@ def process_tags(df):
     df_tags["tag_name"] = df_tags["tag_name"].str.replace("-and-", " and ")
     # Filter tags
     df_tags = df_tags.loc[~df_tags["tag_name"].isin(FILTER_TAGS)]
-    return process_special_tags(df_tags)
+    return process_special_tags(df_tags, claim_type)
 
 
-def process_special_tags(df):
+def process_special_tags(df, claim_type="stream"):
+    global CLAIM_TYPE
+    CLAIM_TYPE = claim_type
+    COLUMN_TYPE = f"{CLAIM_TYPE}_type"
+    CLAIM_ID = "claim_id" if (CLAIM_TYPE == "stream") else "channel_id"
+    CATEGORIES = STREAM_TYPE if (CLAIM_TYPE == "stream") else CHANNEL_TYPE
+    CATEGORIES_LIST = STREAM_TYPES if (CLAIM_TYPE == "stream") else CHANNEL_TYPES
+
     df_tags = df.copy()
     # Find multilingual or alias version and correct tag_names:
     df_tags.loc[
-        df_tags["tag_name"].str.contains("|".join(MULTILINGUAL["music"]), case=False),
+        df_tags["tag_name"].str.contains("|".join(MULTILINGUAL["MUSIC"]), case=False),
         "tag_name",
-    ] = STREAM_TYPE["MUSIC_RECORDING"]
+    ] = CATEGORIES["MUSIC"]
+
+    if CLAIM_TYPE == "channel":
+        df_tags.loc[
+            df_tags["tag_name"].str.contains(
+                "|".join(MULTILINGUAL["ARTIST"]), case=False
+            ),
+            "tag_name",
+        ] = CATEGORIES["MUSIC"]
 
     df_tags.loc[
-        df_tags["tag_name"].str.contains("|".join(MULTILINGUAL["podcast"]), case=False),
+        df_tags["tag_name"].str.contains("|".join(MULTILINGUAL["PODCAST"]), case=False),
         "tag_name",
-    ] = STREAM_TYPE["PODCAST_EPISODE"]
-
-    df_tags.loc[
-        df_tags["tag_name"].isin(MULTILINGUAL["podcast"]), "tag_name"
-    ] = STREAM_TYPE["PODCAST_EPISODE"]
+    ] = CATEGORIES["PODCAST"]
 
     df_tags.loc[
         df_tags["tag_name"].str.contains(
-            "|".join(MULTILINGUAL["audiobook"]), case=False
+            "|".join(MULTILINGUAL["AUDIOBOOK"]), case=False
         ),
         "tag_name",
-    ] = STREAM_TYPE["AUDIOBOOK"]
+    ] = CATEGORIES["AUDIOBOOK"]
 
     conditions = [
         # This tag defines the category type
-        df_tags["tag_name"].isin(STREAM_TYPES),
+        df_tags["tag_name"].isin(CATEGORIES_LIST),
         # This tag defines the music genre
         df_tags["tag_name"].isin(GENRES["MUSIC"]),
         # This tag defines the podcast genre
@@ -91,7 +115,7 @@ def process_special_tags(df):
     ]
     # Tags categories
     outputs = [
-        "stream_type",
+        COLUMN_TYPE,
         *genres,
     ]
 
@@ -114,20 +138,21 @@ def process_special_tags(df):
 
     # Group tags by category for each claim
     df_tags = (
-        df_tags.groupby("claim_id")
+        df_tags.groupby(CLAIM_ID)
         .agg(
-            stream_type=("stream_type", select_dominant_category),
+            # Tags
             tags=("tags", unique_clean_list),
-            # Generes
+            # Genres
             music_genre=("music_genre", unique_clean_list),
             podcast_genre=("podcast_genre", unique_clean_list),
             audiobook_genre=("audiobook_genre", unique_clean_list),
+            # Type
+            **{COLUMN_TYPE: (COLUMN_TYPE, select_dominant_category)},
         )
         .reset_index()
     )
-
-    df_tags["stream_type"] = df_tags["stream_type"].astype("category")
-    df_tags["genres"] = select_dominant_genres(df_tags)
+    df_tags[COLUMN_TYPE] = df_tags[COLUMN_TYPE].astype("category")
+    df_tags["genres"] = select_dominant_genres(df_tags, CLAIM_TYPE)
 
     # Return relevant columns
-    return df_tags[["claim_id", "stream_type", "genres", "tags"]]
+    return df_tags[[CLAIM_ID, COLUMN_TYPE, "genres", "tags"]]

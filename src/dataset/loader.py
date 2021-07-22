@@ -4,8 +4,6 @@ import numpy as np
 import pandas as pd
 import os.path as path
 from lbry import filtered_outpoints
-from constants import FILTER_TAGS, STREAM_TYPES, STREAM_TYPE
-from vocabulary import GENRES, MULTILINGUAL
 
 # Create a dataframe from json
 def df_json(file):
@@ -70,12 +68,11 @@ class Dataset_chunk_loader:
     def prepare_channels_data(self, df):
         # Format channel title
         df_channels = df.copy()
-        df_channels["channel_type"] = np.nan
-        df_channels["publisher_title"] = df_channels["publisher_title"].fillna("")
-        df_channels["publisher_title"] = df_channels["publisher_title"].astype("string")
+        df_channels["channel_title"] = df_channels["channel_title"].fillna("")
+        df_channels["channel_title"] = df_channels["channel_title"].astype("string")
         # Filters
-        filter_mask = (df_channels.publisher_title.str.len() > 0) & (
-            ~df_channels.publisher_title.str.contains("free music")
+        filter_mask = (df_channels.channel_title.str.len() > 0) & (
+            ~df_channels.channel_title.str.contains("free music")
         )
         df_channels = df_channels.loc[filter_mask]
         return df_channels

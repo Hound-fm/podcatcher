@@ -43,18 +43,22 @@ LBRY_API: Final = "http://localhost:5279"
 LBRY_TOKEN: Final = "3Nk17Zn6MruF1N9KkbLAKLHFgnmu377M"
 LBRY_COM_API: Final = "https://api.lbry.com/"
 
-
 # Popular audio media types from schema.org
 STREAM_TYPES: Final = {"MusicRecording", "Audiobook", "PodcastEpisode"}
 
+# Channel types
+CHANNEL_TYPES: Final = {"Artist", "Audiobook", "PodcastSeries"}
+
 STREAM_TYPE: Final = {
+    "MUSIC": "MusicRecording",
+    "PODCAST": "PodcastEpisode",
     "AUDIOBOOK": "Audiobook",
-    "PODCAST_EPISODE": "PodcastEpisode",
-    "MUSIC_RECORDING": "MusicRecording",
 }
 
 CHANNEL_TYPE: Final = {
-    "PODCAST_SERIES": "PodcastSeries",
+    "MUSIC": "Artist",
+    "PODCAST": "PodcastSeries",
+    "AUDIOBOOK": "Audiobook",
 }
 
 # Popular irrelevant tags

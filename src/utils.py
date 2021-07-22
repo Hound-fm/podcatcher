@@ -1,6 +1,6 @@
-import re
 import json
 import datetime
+import numpy as np
 import pandas as pd
 import os.path as path
 from datetime import datetime
@@ -43,7 +43,7 @@ def get_current_time():
 
 
 def load_df_cache(name):
-    data = pd.read_csv(f"data/cache/{name}")
+    data = pd.read_csv(f"data/cache/{name}.csv")
     return data
 
 
@@ -55,10 +55,45 @@ def load_json_cache(json_data, file_name):
 
 
 def save_df_cache(df, name):
-    df.to_csv(f"data/cache/{name}", index=False)
+    df.to_csv(f"data/cache/{name}.csv", index=False)
 
 
 def save_json_cache(json_data, file_name):
     file_path = path.join("data/cache", f"{file_name}.json")
     with open(file_path, "wt") as f:
         json.dump(json_data, f, sort_keys=True, indent=2, ensure_ascii=True)
+
+
+def increase_delay_time(delay=0, index=1, delta=0.64):
+    return delay * np.power(index, 2) * delta
+
+
+def get_streams_cannonical_url(df):
+    df_claims = df.copy()
+    df_claims = df_claims[["claim_id", "name", "channel_name", "channel_id"]]
+    df_claims["claim_char"] = df_claims["claim_id"].str[0]
+    df_claims["channel_char"] = df_claims["channel_id"].str.slice(0, 2)
+    df_claims["cannonical_url"] = (
+        +df_claims["channel_name"].astype(str)
+        + "#"
+        + df_claims["channel_char"].astype(str)
+        + "/"
+        + df_claims["name"].astype(str)
+        + "#"
+        + df_claims["claim_char"].astype(str)
+    )
+    df_claims["cannonical_url"] = df_claims["cannonical_url"].astype(str)
+    return df_claims["cannonical_url"]
+
+
+def get_channels_cannonical_url(df):
+    df_claims = df.copy()
+    df_claims = df_claims[["channel_name", "channel_id"]]
+    df_claims["channel_char"] = df_claims["channel_id"].str.slice(0, 2)
+    df_claims["cannonical_url"] = (
+        +df_claims["channel_name"].astype(str)
+        + "#"
+        + df_claims["channel_char"].astype(str)
+    )
+    df_claims["cannonical_url"] = df_claims["cannonical_url"].astype(str)
+    return df_claims["cannonical_url"]

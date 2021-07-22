@@ -3,15 +3,7 @@ import time
 import asyncio
 from utils import unique_array, save_json_cache, get_current_time
 from chainquery import query, queries
-
-from constants import (
-    STREAM_TYPE,
-    FILTER_TAGS,
-)
-
-# Global default values
-default_chunk_index = 0
-default_chunk_size = 100
+from analysis.constants import DEFAULT_CHUNK_SIZE, DEFAULT_CHUNK_INDEX
 
 # Build channles dataset
 def build_channels_dataset(id_list):
@@ -21,8 +13,8 @@ def build_channels_dataset(id_list):
 
 # Build stream dataset
 def build_streams_dataset(
-    chunk_index=default_chunk_index,
-    chunk_size=default_chunk_size,
+    chunk_index=DEFAULT_CHUNK_INDEX,
+    chunk_size=DEFAULT_CHUNK_SIZE,
 ):
     query_options = {"limit": chunk_size, "offset": chunk_size * chunk_index}
     results = query(queries.bulk_fetch_streams(), query_options)
@@ -31,7 +23,7 @@ def build_streams_dataset(
 
 
 # Build data sets
-def build_dataset_chunk(chunk_index=default_chunk_index, chunk_size=default_chunk_size):
+def build_dataset_chunk(chunk_index=DEFAULT_CHUNK_INDEX, chunk_size=DEFAULT_CHUNK_SIZE):
     streams_ids = []
     channels_ids = []
     # Get content
@@ -45,7 +37,7 @@ def build_dataset_chunk(chunk_index=default_chunk_index, chunk_size=default_chun
     # Get list of ids
     for item in content:
         streams_ids.append(item["claim_id"])
-        channels_ids.append(item["publisher_id"])
+        channels_ids.append(item["channel_id"])
 
     if len(channels_ids) > 0:
         channels_ids = unique_array(channels_ids)

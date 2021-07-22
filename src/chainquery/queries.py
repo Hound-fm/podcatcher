@@ -86,7 +86,7 @@ def bulk_fetch_streams():
             claim.audio_duration,
             # Publisher data
             claim.author,
-            claim.publisher_id,
+            claim.publisher_id.as_("channel_id"),
             # Outpoint data
             claim.transaction_hash_id,
             claim.vout,
@@ -106,9 +106,9 @@ def bulk_fetch_channels(channels):
     q = (
         Query.from_(claim)
         .select(
-            claim.claim_id.as_("publisher_id"),
-            claim.name.as_("publisher_name"),
-            claim.title.as_("publisher_title"),
+            claim.claim_id.as_("channel_id"),
+            claim.name.as_("channel_name"),
+            claim.title.as_("channel_title"),
             claim.modified_at,
             # Outpoint data
             claim.transaction_hash_id,

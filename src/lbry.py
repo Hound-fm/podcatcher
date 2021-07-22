@@ -6,9 +6,9 @@ import json
 import time
 import httpx
 import numpy as np
-from utils import unix_time_millis
-from constants import LBRY_API, LBRY_TOKEN, LBRY_COM_API
 from logger import log
+from utils import unix_time_millis, increase_delay_time
+from constants import LBRY_API, LBRY_TOKEN, LBRY_COM_API
 
 # Global values
 TIMEOUT_RETRY = 0
@@ -25,8 +25,12 @@ def api_get_request(url, url_params={}, payload={}):
         res = res.json()
         data = res["data"]
         return data
-    except NameError:
-        print(NameError)
+    except httpx.RequestError as exc:
+        log.error(f"An error occurred while requesting {exc.request.url!r}.")
+    except httpx.HTTPStatusError as exc:
+        log.error(
+            f"Error response {exc.response.status_code} while requesting {exc.request.url!r}."
+        )
 
 
 def lbry_proxy(method, payload_data, retry=0):
@@ -51,7 +55,8 @@ def lbry_proxy(method, payload_data, retry=0):
         global TIMEOUT_RETRY
         TIMEOUT_RETRY = retry + 1
         if TIMEOUT_RETRY < MAX_TIMEOUT_RETRY:
-            time.sleep(TIMEOUT_DELAY * TIMEOUT_RETRY * 0.75)
+            log.error(f"HTTP Exception for {exc.request.url} - {exc}")
+            time.sleep(increase_delay_time(TIMEOUT_DELAY, TIMEOUT_RETRY))
             return lbry_proxy(method, payload_data, TIMEOUT_RETRY)
         else:
             log.error(f"HTTP Exception for {exc.request.url} - {exc}")
