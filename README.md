@@ -3,7 +3,7 @@
 </h1>
 <br/>
 <h3 align="center">
-  <p>Podcast crawler for lbry.</p>
+  <p>Audio media crawler for lbry.</p>
   <br/>
   <img alt="PyPI" src="https://img.shields.io/pypi/v/merge?style=for-the-badge">
 </h3>
