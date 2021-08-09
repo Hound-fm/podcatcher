@@ -23,3 +23,32 @@ Format code:
 ```shell
 poetry run black ./src
 ```
+
+## Commands
+
+### Basic usage
+```shell
+poetry run podcatcher <command>
+```
+
+
+### Sync data
+Scan all audio streams to find music and podcasts episodes.
+All data will be synced to elastic search.
+
+```shell
+poetry run podcatcher sync
+```
+
+### Retry sync
+
+Retry failed sync from last checkpoint (last chunk index)
+```shell
+poetry run podcatcher retry-sync
+```
+
+### Clear cache
+Remove all files on the cache directory.
+```shell
+poetry run podcatcher clear-cache
+```
