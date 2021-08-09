@@ -10,16 +10,19 @@
 
 
 
-## Development 
+## Development
+This project uses [poetry](https://python-poetry.org/) as a dependecy management tool.
 
-Install all dependencies:
+### Install dependencies:
+Installs all defined dependencies of the project.
+For more information please read the poetry [documentation](https://python-poetry.org/docs/basic-usage/#installing-dependencies).
 
 ```shell
 poetry install
 ```
 
-Format code:
-
+### Format code:
+Formore information please read the black [documentation](https://github.com/psf/black)
 ```shell
 poetry run black ./src
 ```
@@ -27,6 +30,9 @@ poetry run black ./src
 ## Commands
 
 ### Basic usage
+
+For more information please read the poetry [documentation](https://python-poetry.org/docs/basic-usage/#using-poetry-run).
+
 ```shell
 poetry run podcatcher <command>
 ```
