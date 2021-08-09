@@ -1,7 +1,9 @@
 # Command line interface
 import click
 import asyncio
-from analysis import full_scan
+from utils import remove_cache
+from analysis import scan
+from status import main_status
 
 # Main command
 @click.group()
@@ -12,11 +14,16 @@ def cli():
 # Initial sync
 @cli.command()
 def sync():
-    full_scan()
+    scan()
 
 
 # Retry failed sync
 @cli.command()
 def retry_sync():
-    pass
-    # full_scan()
+    scan(main_status.status["chunk_index"])
+
+
+# Clear cache files
+@cli.command()
+def clear_cache():
+    remove_cache()

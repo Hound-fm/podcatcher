@@ -13,7 +13,6 @@ from logger import log
 from utils import increase_delay_time
 from analysis.constants import (
     DEFAULT_CHUNK_SIZE,
-    DEFAULT_CHUNK_INDEX,
     DEFAULT_TIMOUT_DELAY,
 )
 
@@ -30,7 +29,7 @@ def formatQuery(q):
 # Default options for queries
 default_query_options = {
     "limit": DEFAULT_CHUNK_SIZE,
-    "offset": DEFAULT_CHUNK_INDEX * DEFAULT_CHUNK_SIZE,
+    "offset": 0,
 }
 
 # Function to run a query and retrive data from the chainquery public api
@@ -64,7 +63,6 @@ def query(q, options=default_query_options, retry=0):
         global TIMEOUT_RETRY
         TIMEOUT_RETRY = retry + 1
         if TIMEOUT_RETRY < MAX_TIMEOUT_RETRY:
-            log.error(f"HTTP Exception for {exc.request.url} - {exc}")
             time.sleep(increase_delay_time(TIMEOUT_DELAY, TIMEOUT_RETRY))
             return query(q, options, TIMEOUT_RETRY)
         else:

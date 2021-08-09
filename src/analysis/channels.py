@@ -34,7 +34,7 @@ def process_channels(df):
     # SDK failed to sync data
     if df_channels.empty:
         return df_channels
-    # Process stream tags
+    # Process channels tags
     df_tags = process_tags(df_channels, "channel")
     # Merge tags data
     df_channels = df_channels.drop(columns="tags")
@@ -42,15 +42,20 @@ def process_channels(df):
     df_channels = pd.merge(df_channels, df_tags, on="channel_id")
 
     df_channels.loc[is_artist(df_channels), "channel_type"] = CHANNEL_TYPE["MUSIC"]
-
     df_channels.loc[is_podcast_series(df_channels), "channel_type"] = CHANNEL_TYPE[
         "PODCAST"
     ]
+
     # Filter uknown types
     df_channels = df_channels.loc[
-        df_channels["channel_type"].notnull()
-        & df_channels["channel_title"].notnull()
-        & ~df_channels["channel_title"].str.contains(
+        df_channels["channel_type"].notnull() & df_channels["channel_title"].notnull()
+    ]
+
+    # Filter suspicious channels (keep safe list)
+    keep_safe_list = is_artist(df_channels) | is_podcast_series(df_channels)
+    df_channels = df_channels.loc[
+        keep_safe_list
+        | ~df_channels.channel_title.str.contains(
             "|".join(MULTILINGUAL["MUSIC"]), case=False
         )
     ]

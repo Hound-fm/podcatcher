@@ -71,8 +71,6 @@ class Dataset_chunk_loader:
         df_channels["channel_title"] = df_channels["channel_title"].fillna("")
         df_channels["channel_title"] = df_channels["channel_title"].astype("string")
         # Filters
-        filter_mask = (df_channels.channel_title.str.len() > 0) & (
-            ~df_channels.channel_title.str.contains("free music")
-        )
+        filter_mask = df_channels.channel_title.str.len() > 0
         df_channels = df_channels.loc[filter_mask]
         return df_channels

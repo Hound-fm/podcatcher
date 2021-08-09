@@ -2,7 +2,7 @@ import json
 import datetime
 import numpy as np
 import pandas as pd
-import os.path as path
+from os import path, listdir, remove as removeFile
 from datetime import datetime
 from pygments import highlight
 from pygments.lexers import JsonLexer
@@ -47,11 +47,24 @@ def load_df_cache(name):
     return data
 
 
-def load_json_cache(json_data, file_name):
+def load_json_cache(file_name):
     file_path = path.join("data/cache", f"{file_name}.json")
-    with open(file_path, "r") as f:
-        data = json.load(f)
-        return data
+    try:
+        with open(file_path, "r") as f:
+            data = json.load(f)
+            return data
+    except:
+        return None
+
+
+def remove_cache():
+    # iterate over files in cache directory
+    for filename in listdir("data/cache"):
+        f = path.join("data/cache", filename)
+        # Check for files to remove.
+        # Ignore .gitkeep
+        if path.isfile(f) and filename != ".gitkeep":
+            removeFile(f)
 
 
 def save_df_cache(df, name):

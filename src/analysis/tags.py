@@ -151,7 +151,8 @@ def process_special_tags(df, claim_type="stream"):
         )
         .reset_index()
     )
-    df_tags[COLUMN_TYPE] = df_tags[COLUMN_TYPE].astype("category")
+
+    df_tags[COLUMN_TYPE] = df_tags[COLUMN_TYPE]
     df_tags["genres"] = select_dominant_genres(df_tags, CLAIM_TYPE)
 
     # Return relevant columns

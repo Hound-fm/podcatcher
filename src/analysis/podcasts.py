@@ -44,8 +44,6 @@ def merge_podcast_episodes(df):
             trending=pd.NamedAgg(column="trending", aggfunc="sum"),
             # Total reposts
             reposted=pd.NamedAgg(column="reposted", aggfunc="sum"),
-            # Count podcast episodes
-            episodes=pd.NamedAgg(column="channel_id", aggfunc="count"),
             # Podcast title
             channel_title=pd.NamedAgg(column="channel_title", aggfunc="first"),
         )
@@ -61,7 +59,6 @@ def merge_podcast_series(df):
             {
                 "trending": "sum",
                 "reposted": "sum",
-                "episodes": "sum",
                 "channel_title": "first",
             }
         )

@@ -3,7 +3,6 @@ import time
 import asyncio
 from utils import unique_array, save_json_cache, get_current_time
 from chainquery import query, queries
-from analysis.constants import DEFAULT_CHUNK_SIZE, DEFAULT_CHUNK_INDEX
 
 # Build channles dataset
 def build_channels_dataset(id_list):
@@ -12,10 +11,7 @@ def build_channels_dataset(id_list):
 
 
 # Build stream dataset
-def build_streams_dataset(
-    chunk_index=DEFAULT_CHUNK_INDEX,
-    chunk_size=DEFAULT_CHUNK_SIZE,
-):
+def build_streams_dataset(chunk_index, chunk_size):
     query_options = {"limit": chunk_size, "offset": chunk_size * chunk_index}
     results = query(queries.bulk_fetch_streams(), query_options)
     save_json_cache(results, "streams")
@@ -23,7 +19,7 @@ def build_streams_dataset(
 
 
 # Build data sets
-def build_dataset_chunk(chunk_index=DEFAULT_CHUNK_INDEX, chunk_size=DEFAULT_CHUNK_SIZE):
+def build_dataset_chunk(chunk_index, chunk_size):
     streams_ids = []
     channels_ids = []
     # Get content
@@ -32,7 +28,7 @@ def build_dataset_chunk(chunk_index=DEFAULT_CHUNK_INDEX, chunk_size=DEFAULT_CHUN
 
     # Stop function if there is no content
     if content_size == 0:
-        return False
+        return "end"
 
     # Get list of ids
     for item in content:

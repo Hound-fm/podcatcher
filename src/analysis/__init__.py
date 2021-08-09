@@ -3,23 +3,28 @@ import pandas as pd
 from logger import log
 from dataset import build_dataset_chunk
 from dataset.loader import Dataset_chunk_loader
-from status import update_status
+from status import main_status
 from .channels import process_channels
 from .streams import process_streams
 from .music import process_music
 from .podcasts import process_podcasts
-from .constants import DEFAULT_CHUNK_SIZE, DEFAULT_CHUNK_INDEX, DEFAULT_TIMOUT_DELAY
+from .constants import DEFAULT_CHUNK_SIZE, DEFAULT_TIMOUT_DELAY
 
 # Global values
-dataset_chunk_index = 10  # or DEFAULT_CHUNK_INDEX
+dataset_chunk_index = -1
 dataset_chunk_size = DEFAULT_CHUNK_SIZE
 delay = DEFAULT_TIMOUT_DELAY
 
 # Stop scan
-def stop_scan():
-    update_status(False, dataset_chunk_index)
+def stop_scan(error=True):
+    global dataset_chunk_index
+    last_index = (dataset_chunk_index - 1) if (dataset_chunk_index > -1) else -1
+    main_status.update_status(False, last_index)
     # Handle process error
-    log.error(f"Failed to process dataset chunk on index: {dataset_chunk_index}")
+    if error:
+        log.error(f"Failed to process dataset chunk on index: {dataset_chunk_index}")
+    else:
+        log.info(f"Sync completed!")
     raise SystemExit(0)
 
 
@@ -28,6 +33,9 @@ def start_scan():
     global dataset_chunk_index
     dataset_chunk_index += 1
     ready = build_dataset_chunk(dataset_chunk_index, dataset_chunk_size)
+    # Build is empty
+    if ready == "end":
+        stop_scan(False)
     # Build completed
     if ready:
         # Process dataset chunk
@@ -44,14 +52,14 @@ def start_scan():
     else:
         stop_scan()
     # Update sync status
-    update_status(False, dataset_chunk_index)
+    main_status.update_status(False, dataset_chunk_index)
 
 
-# Scan all existent claims
-def full_scan():
+# Scan claims
+def scan(start_index=-1):
     # Reset chunk index
     global dataset_chunk_index
-    # dataset_chunk_index = 0
+    dataset_chunk_index = start_index
     start_scan()
 
 

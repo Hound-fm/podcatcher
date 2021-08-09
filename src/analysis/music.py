@@ -26,8 +26,6 @@ def merge_tracks(df):
             trending=pd.NamedAgg(column="trending", aggfunc="sum"),
             # Total reposts
             reposted=pd.NamedAgg(column="reposted", aggfunc="sum"),
-            # Count podcast episodes
-            tracks=pd.NamedAgg(column="channel_id", aggfunc="count"),
             # Podcast title
             channel_title=pd.NamedAgg(column="channel_title", aggfunc="first"),
         )
