@@ -66,11 +66,12 @@ class Dataset_chunk_loader:
         return df_streams
 
     def prepare_channels_data(self, df):
-        # Format channel title
         df_channels = df.copy()
-        df_channels["channel_title"] = df_channels["channel_title"].fillna("")
-        df_channels["channel_title"] = df_channels["channel_title"].astype("string")
         # Filters
-        filter_mask = df_channels.channel_title.str.len() > 0
+        filter_mask = df_channels.channel_title.notnull() & (
+            df_channels.channel_title.str.len() > 0
+        )
         df_channels = df_channels.loc[filter_mask]
+        # Format channel title
+        df_channels["channel_title"] = df_channels["channel_title"].astype("string")
         return df_channels

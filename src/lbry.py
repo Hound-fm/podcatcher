@@ -82,6 +82,17 @@ def api_post_request(url, payload={}):
         log.error(f"An error occurred while requesting {exc.request.url!r}.")
 
 
+def get_view_counts(claim_ids):
+    try:
+        data = {"auth_token": LBRY_TOKEN, "claim_id": ",".join(claim_ids)}
+        view_counts = api_post_request("file/view_count", data)
+        return view_counts["data"]
+
+    except NameError:
+        log.error("Failed to retrive view counts")
+        return np.zeros(len(claim_ids))
+
+
 # Get filtered list
 def get_filtered_outpoints():
     try:
@@ -94,14 +105,3 @@ def get_filtered_outpoints():
 
 # Expose filtered list
 filtered_outpoints = get_filtered_outpoints()
-
-
-def get_view_counts(claim_ids):
-    try:
-        data = {"auth_token": LBRY_TOKEN, "claim_id": ",".join(claim_ids)}
-        view_counts = api_post_request("file/view_count", data)
-        return view_counts["data"]
-
-    except NameError:
-        log.error("Failed to retrive view counts")
-        return np.zeros(len(claim_ids))
