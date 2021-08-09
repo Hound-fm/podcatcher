@@ -13,7 +13,7 @@ class Status:
 
     def sync_status(self):
         status = load_json_cache("status")
-        self.status = status if status else DEFAULT_STATUS
+        self.status = status or DEFAULT_STATUS
 
     # Methods
     def update_status(self, success=False, index=0):
