@@ -41,7 +41,7 @@ poetry run podcatcher sync
 
 ### Retry sync
 
-Retry failed sync from last checkpoint (last chunk index)
+Retry failed sync from last checkpoint. If no previous failed sync occured it will just run a normal sync.
 ```shell
 poetry run podcatcher retry-sync
 ```
