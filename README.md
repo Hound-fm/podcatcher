@@ -32,9 +32,8 @@ poetry run podcatcher <command>
 ```
 
 
-### Sync data
-Scan all audio streams to find music and podcasts episodes.
-All data will be synced to elastic search.
+### Sync
+Scan all audio streams to find music and podcasts episodes, keeping elasticsearch in sync.
 
 ```shell
 poetry run podcatcher sync
