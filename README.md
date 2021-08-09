@@ -6,6 +6,8 @@
   <p>Audio media crawler for lbry.</p>
   <br/>
   <img alt="PyPI" src="https://img.shields.io/pypi/v/merge?style=for-the-badge">
+  
+  <img alt="Discord" src="https://img.shields.io/discord/557272918854336513?style=for-the-badge">
 </h3>
 
 
