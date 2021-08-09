@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "podcatcher"
 version = "0.0.1"
-description = "Podcast crawler for the lbry."
+description = "Audio media crawler for the lbry."
 authors = ["btzr-io <btzr.io@gmail.com>"]
 license = "MIT"
 # include main package
