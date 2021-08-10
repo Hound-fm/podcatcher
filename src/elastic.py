@@ -11,6 +11,7 @@ MAPPINGS_STREAM = {
     "name": "text",
     "trending": "float",
     "reposted": "integer",
+    "license": "text",
     "channel_id": "text",
     "channel_name": "text",
     "channel_title": "text",
