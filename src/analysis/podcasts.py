@@ -103,7 +103,7 @@ def process_podcasts(chunk):
     if df_podcasts.empty:
         return
     # Fix missing values
-    df_podcasts.license = df_podcasts.license.fillna("All Rights Reserved")
+    df_podcasts.loc[df_podcasts.license.isnull(), 'license'] = "All Rights Reserved"
     # Update cache
     update_podcast_episodes_cache(df_podcasts)
     # Process podcast series
