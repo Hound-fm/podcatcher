@@ -1,16 +1,15 @@
 import os
 import json
 import pandas as pd
+from config import config
 from sync import sync_channels_data
 from utils import get_channels_cannonical_url
 from constants import CHANNEL_TYPE
 from vocabulary import MULTILINGUAL
 from .tags import process_tags
 
-SAFE_LIST_PATH = os.path.join("data", "safe_list.json")
-
 # Load block list
-with open(SAFE_LIST_PATH, "r") as f:
+with open(config["SAFE_LIST"], "r") as f:
     SAFE_LIST = json.load(f)
 
 

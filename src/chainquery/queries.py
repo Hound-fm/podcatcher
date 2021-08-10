@@ -1,13 +1,12 @@
 # Import dependencies
 import os
 import json
+from config import config
 from pypika import Query, Order, Tables, Criterion, functions as fn
 from constants import CLAIM_TYPE, CONTENT_TYPE_AUDIO
 
-BLOCK_LIST_PATH = os.path.join("data", "block_list.json")
-
 # Load block list
-with open(BLOCK_LIST_PATH, "r") as f:
+with open(config["BLOCK_LIST"], "r") as f:
     BLOCK_LIST = json.load(f)
 
 # Blocked channels list

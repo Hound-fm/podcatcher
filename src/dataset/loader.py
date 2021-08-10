@@ -2,19 +2,8 @@ import re
 import asyncio
 import numpy as np
 import pandas as pd
-import os.path as path
+from utils import df_json, get_outpoints
 from lbry import filtered_outpoints
-
-# Create a dataframe from json
-def df_json(file):
-    json_path = path.join("data/cache", file)
-    return pd.read_json(json_path)
-
-
-# Get outpoints from claims dataframe
-def get_outpoints(df):
-    return df["transaction_hash_id"] + ":" + df["vout"].astype(str)
-
 
 # Create dataframes from dataset chunk
 class Dataset_chunk_loader:
