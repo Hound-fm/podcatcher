@@ -28,17 +28,17 @@ For more information please read the poetry [documentation](https://python-poetr
 ```shell
 poetry install
 ```
-
-### Update hooks:
+### Tasks
+#### Update hooks:
 Setup and update pre-commit hooks. You should run this the first time after poetry install.
 ```shell
 poetry run task update-hooks
 ```
 
-### Format code:
+#### Format code:
 Formore information please read the black [documentation](https://github.com/psf/black)
 ```shell
-poetry run black ./src
+poetry run task format
 ```
 
 ## Commands
