@@ -9,6 +9,8 @@ MAPPINGS_STREAM = {
     # keywords
     "title": "text",
     "name": "text",
+    "tags": "keyword",
+    "genres": "keyword",
     "trending": "float",
     "reposted": "integer",
     "license": "text",
@@ -60,19 +62,20 @@ class Elastic:
         return pandas_df
 
     # Append chunk from dataFrame to elastic-search
-    def append_df_chunk(self, index_name, pd_df, chunk_type="stream"):
+    def append_df_chunk(self, index_name, df, chunk_type="stream"):
         mappings = None
         # Select mappings
         if chunk_type == "stream":
             mappings = MAPPINGS_STREAM
+
         if chunk_type == "channel":
             mappings = MAPPINGS_CHANNEL
-
+    
         # Use pandas index for elasticsearch id
-        pd_df = pd_df.set_index(f"{chunk_type}_id")
+        df = df.set_index(f"{chunk_type}_id")
 
         ed.pandas_to_eland(
-            pd_df,
+            df,
             es_client=self.client,
             es_refresh=True,
             es_if_exists="append",

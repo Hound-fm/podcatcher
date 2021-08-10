@@ -17,7 +17,7 @@ def update_podcast_episodes_cache(df_update):
 
     if not df_merged.empty:
         # Save to local cache
-        save_df_cache(df_merged, cache_name)
+        save_df_cache(cache_name, df_merged)
 
 
 def update_podcast_series_cache(df_update):
@@ -35,7 +35,7 @@ def update_podcast_series_cache(df_update):
 
     if not df_merged.empty:
         # Save to local cache
-        save_df_cache(df_merged, cache_name)
+        save_df_cache(cache_name, df_merged)
 
 
 def merge_podcast_episodes(df):

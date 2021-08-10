@@ -7,14 +7,14 @@ from chainquery import query, queries
 # Build channles dataset
 def build_channels_dataset(id_list):
     results = query(queries.bulk_fetch_channels(id_list))
-    save_json_cache(results, "channels")
+    save_json_cache("df_channels", results)
 
 
 # Build stream dataset
 def build_streams_dataset(chunk_index, chunk_size):
     query_options = {"limit": chunk_size, "offset": chunk_size * chunk_index}
     results = query(queries.bulk_fetch_streams(), query_options)
-    save_json_cache(results, "streams")
+    save_json_cache("df_streams", results)
     return results
 
 

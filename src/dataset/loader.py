@@ -2,7 +2,7 @@ import re
 import asyncio
 import numpy as np
 import pandas as pd
-from utils import df_json, get_outpoints
+from utils import load_df_cache, get_outpoints
 from lbry import filtered_outpoints
 
 # Create dataframes from dataset chunk
@@ -20,24 +20,17 @@ class Dataset_chunk_loader:
 
     # Load streams dataframe
     def load_streams_data(self):
-        df_streams = df_json("streams.json")
+        df_streams = load_df_cache("df_streams")
         if not df_streams.empty:
             df_streams = self.prepare_streams_data(df_streams)
         return df_streams
 
     # Load channels dataframe
     def load_channels_data(self):
-        df_channels = df_json("channels.json")
+        df_channels = load_df_cache("df_channels")
         if not df_channels.empty:
             df_channels = self.prepare_channels_data(df_channels)
         return df_channels
-
-    # Load tags dataframe
-    def load_tags_data(self):
-        df_tags = df_json("tags.json")
-        if not df_tags.empty:
-            df_tags = self.prepare_tags_data(df_tags)
-        return df_tags
 
     # Initial preparation of streams dataframe
     def prepare_streams_data(self, df):

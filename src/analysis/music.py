@@ -55,7 +55,7 @@ def update_artists_cache(df_update):
 
     if not df_merged.empty:
         # Save to local cache
-        save_df_cache(df_merged, cache_name)
+        save_df_cache(cache_name, df_merged)
 
 
 def update_tracks_cache(df_update):
@@ -72,7 +72,7 @@ def update_tracks_cache(df_update):
 
     if not df_merged.empty:
         # Save to local cache
-        save_df_cache(df_merged, cache_name)
+        save_df_cache(cache_name, df_merged)
 
 
 # Process podcast episodes

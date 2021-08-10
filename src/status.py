@@ -24,7 +24,7 @@ class Status:
             "chunk_index": index,
         }
         # Save cache data
-        save_json_cache(self.status, "status")
+        save_json_cache("status", self.status)
 
     # Actions
 
