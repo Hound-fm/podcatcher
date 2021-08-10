@@ -70,7 +70,7 @@ class Elastic:
 
         if chunk_type == "channel":
             mappings = MAPPINGS_CHANNEL
-    
+
         # Use pandas index for elasticsearch id
         df = df.set_index(f"{chunk_type}_id")
 
