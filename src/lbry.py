@@ -35,7 +35,7 @@ def api_get_request(url, url_params={}, payload={}):
 
 def lbry_proxy(method, payload_data, retry=0):
     res = None
-    headers = {"Content-Type": "application/json-rpc", "user-agent": "my-app/0.0.1"}
+    headers = {"Content-Type": "application/json-rpc", "user-agent": "hound.fm/0.0.1"}
     payload = {
         "id": unix_time_millis(),
         "jsonrpc": "2.0",

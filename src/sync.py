@@ -1,5 +1,22 @@
 import pandas as pd
+from elastic import Elastic
 from lbry import lbry_proxy
+from utils import load_df_cache
+from logger import log
+from constants import ELASTIC_INDICES, ELASTIC_INDEX
+
+# Sync cache data to elasticsearch
+def sync_elastic_search():
+    elastic = Elastic()
+    for index in ELASTIC_INDICES:
+        df_cache = load_df_cache(f"df_{index}")
+        chunk_type = "stream"
+        if (
+            index == ELASTIC_INDEX["ARTISTS"]
+            or index == ELASTIC_INDEX["PODCAST_SERIES"]
+        ):
+            chunk_type = "channel"
+        elastic.append_df_chunk(index, df_cache, chunk_type)
 
 
 # Load unavailable data of streams from sdk
@@ -20,7 +37,7 @@ def sync_channels_data(df):
     res = lbry_proxy("resolve", payload)
     if res:
         if "error" in res:
-            print(res["error"])
+            log.error(f'Error: {res["error"]["message"]}')
             return pd.DataFrame()
         if "result" in res:
             res = res["result"]
@@ -98,7 +115,7 @@ def sync_streams_data(df):
     res = lbry_proxy("resolve", payload)
     if res:
         if "error" in res:
-            print(res["error"])
+            log.error(f'Error: {res["error"]["message"]}')
             return pd.DataFrame()
         if "result" in res:
             res = res["result"]

@@ -6,7 +6,7 @@
   <p>Audio media crawler for lbry.</p>
   <br/>
   <img alt="PyPI" src="https://img.shields.io/pypi/v/merge?style=for-the-badge">
-  
+
   <img alt="Discord" src="https://img.shields.io/discord/557272918854336513?style=for-the-badge&logo=discord&logoColor=white">
 </h3>
 
@@ -54,8 +54,22 @@ Retry failed sync from last checkpoint. If no previous failed sync occured it wi
 poetry run podcatcher retry-sync
 ```
 
+### Cache sync
+Skip scan and sync existent cache data to elasticsearch.
+
+```shell
+poetry run podcatcher cache-sync
+```
+
 ### Clear cache
 Remove all files on the cache directory.
 ```shell
 poetry run podcatcher clear-cache
+```
+
+### Drop
+Remove all indices from elasticsearch and all files from the cache directory.
+
+```shell
+poetry run podcatcher drop
 ```

@@ -76,3 +76,17 @@ FILTER_TAGS: Final = [
     "new music",
     "nocopyrightmusic",
 ]
+
+ELASTIC_INDICES: Final = [
+    "artists",
+    "podcast_series",
+    "music_recordings",
+    "podcast_episodes",
+]
+
+ELASTIC_INDEX: Final = {
+    "ARTISTS": "artists",
+    "PODCAST_SERIES": "podcast_series",
+    "MUSIC_RECORDINGS": "music_recordings",
+    "PODCAST_EPISODES": "podcast_episodes",
+}

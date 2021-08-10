@@ -1,6 +1,8 @@
 # Command line interface
 import click
 import asyncio
+from elastic import Elastic
+from sync import sync_elastic_search
 from utils import remove_cache
 from analysis import scan
 from status import main_status
@@ -17,6 +19,12 @@ def sync():
     scan()
 
 
+# Sync cache data
+@cli.command()
+def sync_cache():
+    sync_elastic_search()
+
+
 # Retry failed sync
 @cli.command()
 def retry_sync():
@@ -27,3 +35,10 @@ def retry_sync():
 @cli.command()
 def clear_cache():
     remove_cache()
+
+
+# Drop all data
+@cli.command()
+def drop():
+    remove_cache()
+    Elastic().destroy_data()

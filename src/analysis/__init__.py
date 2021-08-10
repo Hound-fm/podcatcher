@@ -1,5 +1,6 @@
 import time
 import pandas as pd
+from sync import sync_elastic_search
 from logger import log
 from dataset import build_dataset_chunk
 from dataset.loader import Dataset_chunk_loader
@@ -23,9 +24,10 @@ def stop_scan(error=True):
     # Handle process error
     if error:
         log.error(f"Failed to process dataset chunk on index: {dataset_chunk_index}")
+        raise SystemExit(0)
     else:
         log.info(f"Sync completed!")
-    raise SystemExit(0)
+        sync_elastic_search()
 
 
 # Scan all existent claims

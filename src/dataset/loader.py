@@ -57,12 +57,16 @@ class Dataset_chunk_loader:
         df_streams["outpoint"] = (
             df_streams["transaction_hash_id"] + ":" + df_streams["vout"].astype(str)
         )
-        # Remove irrelevant columns
-        df_streams = df_streams.drop(["transaction_hash_id", "vout"], axis=1)
         # Filter blocked content
         if filtered_outpoints and len(filtered_outpoints) > 0:
             filter_mask = ~df_streams.outpoint.isin(filtered_outpoints)
             df_streams = df_streams.loc[filter_mask]
+
+        # Remove irrelevant columns
+        df_streams = df_streams.drop(
+            ["transaction_hash_id", "vout", "outpoint"], axis=1
+        )
+
         return df_streams
 
     def prepare_channels_data(self, df):

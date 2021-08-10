@@ -32,7 +32,7 @@ def build_dataset_chunk(chunk_index, chunk_size):
 
     # Get list of ids
     for item in content:
-        streams_ids.append(item["claim_id"])
+        streams_ids.append(item["stream_id"])
         channels_ids.append(item["channel_id"])
 
     if len(channels_ids) > 0:

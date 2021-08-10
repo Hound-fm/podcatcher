@@ -22,7 +22,7 @@ def process_streams(df):
     df_tags = process_tags(df_streams)
     # Merge tags data
     df_streams = df_streams.drop(columns="tags")
-    df_streams = pd.merge(df_streams, df_tags, on="claim_id")
+    df_streams = pd.merge(df_streams, df_tags, on="stream_id")
     # Classify untagged content:
     # It is possible to detect podcast episodes by title.
     df_streams.loc[

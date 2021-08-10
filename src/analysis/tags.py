@@ -49,7 +49,7 @@ def select_dominant_genres(df_tags, claim_type="stream"):
 
 
 def process_tags(df, claim_type="stream"):
-    CLAIM_ID = "claim_id" if (claim_type == "stream") else "channel_id"
+    CLAIM_ID = "stream_id" if (claim_type == "stream") else "channel_id"
     df_tags = df[["tags", CLAIM_ID]].explode("tags")
     df_tags = df_tags.rename(columns={"tags": "tag_name"})
     # Format tag name
@@ -66,7 +66,7 @@ def process_special_tags(df, claim_type="stream"):
     global CLAIM_TYPE
     CLAIM_TYPE = claim_type
     COLUMN_TYPE = f"{CLAIM_TYPE}_type"
-    CLAIM_ID = "claim_id" if (CLAIM_TYPE == "stream") else "channel_id"
+    CLAIM_ID = "stream_id" if (CLAIM_TYPE == "stream") else "channel_id"
     CATEGORIES = STREAM_TYPE if (CLAIM_TYPE == "stream") else CHANNEL_TYPE
     CATEGORIES_LIST = STREAM_TYPES if (CLAIM_TYPE == "stream") else CHANNEL_TYPES
 

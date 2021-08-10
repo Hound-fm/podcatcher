@@ -1,5 +1,5 @@
 import pandas as pd
-from constants import STREAM_TYPE, CHANNEL_TYPE
+from constants import STREAM_TYPE, CHANNEL_TYPE, ELASTIC_INDEX
 from utils import save_df_cache, load_df_cache
 
 
@@ -10,6 +10,8 @@ def merge_artists(df):
             {
                 "trending": "sum",
                 "reposted": "sum",
+                "channel_name": "first",
+                "channel_type": "first",
                 "channel_title": "first",
             }
         )
@@ -26,7 +28,11 @@ def merge_tracks(df):
             trending=pd.NamedAgg(column="trending", aggfunc="sum"),
             # Total reposts
             reposted=pd.NamedAgg(column="reposted", aggfunc="sum"),
-            # Podcast title
+            # Channel name
+            channel_name=pd.NamedAgg(column="channel_name", aggfunc="first"),
+            # Channel type
+            channel_type=pd.NamedAgg(column="channel_type", aggfunc="first"),
+            #  Channel title
             channel_title=pd.NamedAgg(column="channel_title", aggfunc="first"),
         )
         .reset_index()
@@ -36,10 +42,11 @@ def merge_tracks(df):
 
 def update_artists_cache(df_update):
     df_merged = df_update
+    cache_name = f'df_{ELASTIC_INDEX["ARTISTS"]}'
     # Read from local cache
     try:
         # Load cached data
-        cached = load_df_cache("df_artists")
+        cached = load_df_cache(cache_name)
         # Merge new data
         df_merged = pd.concat([cached, df_update])
         df_merged = merge_artists(df_merged)
@@ -48,15 +55,16 @@ def update_artists_cache(df_update):
 
     if not df_merged.empty:
         # Save to local cache
-        save_df_cache(df_merged, "df_artists")
+        save_df_cache(df_merged, cache_name)
 
 
 def update_tracks_cache(df_update):
     df_merged = df_update
+    cache_name = f'df_{ELASTIC_INDEX["MUSIC_RECORDINGS"]}'
     # Read from local cache
     try:
         # Load cached data
-        cached = load_df_cache("df_tracks")
+        cached = load_df_cache(cache_name)
         # Merge new data
         df_merged = pd.concat([cached, df_update])
     except FileNotFoundError:
@@ -64,7 +72,7 @@ def update_tracks_cache(df_update):
 
     if not df_merged.empty:
         # Save to local cache
-        save_df_cache(df_merged, "df_tracks")
+        save_df_cache(df_merged, cache_name)
 
 
 # Process podcast episodes

@@ -1,14 +1,15 @@
 import pandas as pd
-from constants import STREAM_TYPE, CHANNEL_TYPE
+from constants import STREAM_TYPE, CHANNEL_TYPE, ELASTIC_INDEX
 from utils import save_df_cache, load_df_cache
 
 
 def update_podcast_episodes_cache(df_update):
     df_merged = df_update
+    cache_name = f'df_{ELASTIC_INDEX["PODCAST_EPISODES"]}'
     # Read from local cache
     try:
         # Load cached data
-        cached = load_df_cache("df_podcast_episodes")
+        cached = load_df_cache(cache_name)
         # Merge new data
         df_merged = pd.concat([cached, df_update])
     except FileNotFoundError:
@@ -16,15 +17,16 @@ def update_podcast_episodes_cache(df_update):
 
     if not df_merged.empty:
         # Save to local cache
-        save_df_cache(df_merged, "df_podcast_episodes")
+        save_df_cache(df_merged, cache_name)
 
 
 def update_podcast_series_cache(df_update):
     df_merged = df_update
+    cache_name = f'df_{ELASTIC_INDEX["PODCAST_SERIES"]}'
     # Read from local cache
     try:
         # Load cached data
-        cached = load_df_cache("df_podcast_series")
+        cached = load_df_cache(cache_name)
         # Merge new data
         df_merged = pd.concat([cached, df_update])
         df_merged = merge_podcast_series(df_merged)
@@ -33,7 +35,7 @@ def update_podcast_series_cache(df_update):
 
     if not df_merged.empty:
         # Save to local cache
-        save_df_cache(df_merged, "df_podcast_series")
+        save_df_cache(df_merged, cache_name)
 
 
 def merge_podcast_episodes(df):
@@ -44,7 +46,11 @@ def merge_podcast_episodes(df):
             trending=pd.NamedAgg(column="trending", aggfunc="sum"),
             # Total reposts
             reposted=pd.NamedAgg(column="reposted", aggfunc="sum"),
-            # Podcast title
+            # Channel_name
+            channel_name=pd.NamedAgg(column="channel_name", aggfunc="first"),
+            # Channel_type
+            channel_type=pd.NamedAgg(column="channel_type", aggfunc="first"),
+            # Channel title
             channel_title=pd.NamedAgg(column="channel_title", aggfunc="first"),
         )
         .reset_index()
@@ -59,6 +65,8 @@ def merge_podcast_series(df):
             {
                 "trending": "sum",
                 "reposted": "sum",
+                "channel_name": "first",
+                "channel_type": "first",
                 "channel_title": "first",
             }
         )
@@ -73,6 +81,8 @@ def process_podcast_series(df_podcasts, chunk):
             "trending",
             "reposted",
             "channel_id",
+            "channel_name",
+            "channel_type",
             "channel_title",
         ]
     ]
@@ -92,6 +102,8 @@ def process_podcasts(chunk):
     # No podcast episodes on dataset chunk
     if df_podcasts.empty:
         return
+    # Fix missing values
+    df_podcasts.license.fillna("All Rights Reserved", inplace=True)
     # Update cache
     update_podcast_episodes_cache(df_podcasts)
     # Process podcast series

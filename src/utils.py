@@ -74,7 +74,7 @@ def save_df_cache(df, name):
 def save_json_cache(json_data, file_name):
     file_path = path.join("data/cache", f"{file_name}.json")
     with open(file_path, "wt") as f:
-        json.dump(json_data, f, sort_keys=True, indent=2, ensure_ascii=True)
+        json.dump(json_data, f, sort_keys=True, indent=0, ensure_ascii=True)
 
 
 def increase_delay_time(delay=0, index=1, delta=0.64):
@@ -83,8 +83,8 @@ def increase_delay_time(delay=0, index=1, delta=0.64):
 
 def get_streams_cannonical_url(df):
     df_claims = df.copy()
-    df_claims = df_claims[["claim_id", "name", "channel_name", "channel_id"]]
-    df_claims["claim_char"] = df_claims["claim_id"].str[0]
+    df_claims = df_claims[["stream_id", "name", "channel_name", "channel_id"]]
+    df_claims["claim_char"] = df_claims["stream_id"].str[0]
     df_claims["channel_char"] = df_claims["channel_id"].str.slice(0, 2)
     df_claims["cannonical_url"] = (
         +df_claims["channel_name"].astype(str)
