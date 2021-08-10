@@ -11,6 +11,12 @@
 </h3>
 
 
+## Requeriments
+
+- Python [3.8](https://www.python.org/)
+- Poetry [1.1.7](https://python-poetry.org/)
+- Elasticsearch [7.14.0](https://www.elastic.co/downloads/elasticsearch)
+
 
 ## Development
 This project uses [poetry](https://python-poetry.org/) as a dependecy management tool.
