@@ -31,8 +31,19 @@ MAPPINGS_CHANNEL = {
 
 
 class Elastic:
-    def __init__(self, host=config["ELASTIC_HOST"]):
-        self.client = Elasticsearch([host], http_compress=True)
+    def __init__(self):
+        if "ELASTIC_HOST" in config:
+            host = config["ELASTIC_HOST"]
+            # No authentication provided
+            if not config.keys() & {"ELASTIC_USER", "ELASTIC_PASSWORD"}:
+                self.client = Elasticsearch([host], http_compress=True)
+            else:
+                # HTTP authentication
+                self.client = Elasticsearch(
+                    [host],
+                    http_auth=(config["ELASTIC_USER"], config["ELASTIC_PASSWORD"]),
+                    http_compress=True,
+                )
 
     # Generate data structure:
     def build_data_schema(self):

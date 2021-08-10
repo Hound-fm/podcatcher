@@ -16,6 +16,7 @@ packages = [
 podcatcher = "main:cli"
 
 [tool.taskipy.tasks]
+format = "black ./"
 update-hooks = { cmd = "pre-commit install", help = "Update and test pre-commit hooks." }
 
 [tool.poetry.dependencies]
