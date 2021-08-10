@@ -1,5 +1,6 @@
 import eland as ed
 from logger import log
+from config import config
 from elasticsearch import Elasticsearch
 from elasticsearch import helpers
 from constants import ELASTIC_INDICES
@@ -27,7 +28,7 @@ MAPPINGS_CHANNEL = {
 
 
 class Elastic:
-    def __init__(self, host="http://localhost:9200"):
+    def __init__(self, host=config["ELASTIC_HOST"]):
         self.client = Elasticsearch([host], http_compress=True)
 
     # Generate data structure:
