@@ -21,7 +21,7 @@
 ## Development
 This project uses [poetry](https://python-poetry.org/) as a dependecy management tool.
 
-### Install dependencies:
+### Install dependencies
 Installs all defined dependencies of the project.
 For more information please read the poetry [documentation](https://python-poetry.org/docs/basic-usage/#installing-dependencies).
 
@@ -29,13 +29,13 @@ For more information please read the poetry [documentation](https://python-poetr
 poetry install
 ```
 ### Tasks
-#### Update hooks:
+#### Update hooks
 Setup and update pre-commit hooks. You should run this the first time after poetry install.
 ```shell
 poetry run task update-hooks
 ```
 
-#### Format code:
+#### Format code
 Formore information please read the black [documentation](https://github.com/psf/black)
 ```shell
 poetry run task format
