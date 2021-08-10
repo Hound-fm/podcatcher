@@ -11,7 +11,7 @@
 </h3>
 
 
-## Requeriments
+## Requirements
 
 - Python [3.8](https://www.python.org/)
 - Poetry [1.1.7](https://python-poetry.org/)
@@ -19,7 +19,7 @@
 
 
 ## Development
-This project uses [poetry](https://python-poetry.org/) as a dependecy management tool.
+This project uses [poetry](https://python-poetry.org/) as a dependency management tool.
 
 ### Install dependencies
 Installs all defined dependencies of the project.
@@ -36,7 +36,7 @@ poetry run task update-hooks
 ```
 
 #### Format code
-Formore information please read the black [documentation](https://github.com/psf/black)
+For more information please read the black [documentation](https://github.com/psf/black)
 ```shell
 poetry run task format
 ```
