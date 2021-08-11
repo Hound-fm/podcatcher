@@ -23,7 +23,6 @@ MAPPINGS_STREAM = {
 MAPPINGS_CHANNEL = {
     # keywords
     "trending": "float",
-    "reposted": "integer",
     "channel_name": "text",
     "channel_title": "text",
     "channel_type": "keyword",

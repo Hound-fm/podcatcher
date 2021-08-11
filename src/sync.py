@@ -57,9 +57,7 @@ def sync_channels_data(df):
 
         # Get claim status
         if "claim_op" in metadata:
-            if "is_channel_signature_valid" in metadata:
-                if metadata["is_channel_signature_valid"]:
-                    claim_status = "active"
+            claim_status = "active"
 
         # Get claim stats
         if "meta" in metadata:

@@ -81,7 +81,7 @@ def save_df_cache(name, df):
 def save_json_cache(file_name, json_data):
     file_path = path.join(config["CACHE_DIR"], f"{file_name}.json")
     with open(file_path, "wt") as f:
-        json.dump(json_data, f, sort_keys=True, indent=0, ensure_ascii=True)
+        json.dump(json_data, f, sort_keys=True, ensure_ascii=True)
 
 
 def increase_delay_time(delay=0, index=1, delta=0.64):
