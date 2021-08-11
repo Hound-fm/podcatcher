@@ -25,8 +25,6 @@ def select_dominant_genres(df_tags, claim_type="stream"):
     CATEGORIES = STREAM_TYPE if (claim_type == "stream") else CHANNEL_TYPE
 
     conditions = [
-        # This tag defines the audiobook genre
-        df_tags[COLUMN_TYPE] == CATEGORIES["AUDIOBOOK"],
         # This tag defines the podcast genre
         df_tags[COLUMN_TYPE] == CATEGORIES["PODCAST"],
         # This tag defines the music genre
@@ -35,14 +33,11 @@ def select_dominant_genres(df_tags, claim_type="stream"):
 
     # Select dominant column
     choices = [
-        df_tags["audiobook_genre"],
         df_tags["podcast_genre"],
         df_tags["music_genre"],
     ]
 
-    all_genres = (
-        df_tags["music_genre"] + df_tags["podcast_genre"] + df_tags["audiobook_genre"]
-    )
+    all_genres = df_tags["music_genre"] + df_tags["podcast_genre"]
 
     # Return series
     return np.select(conditions, choicelist=choices, default=all_genres)
@@ -104,14 +99,11 @@ def process_special_tags(df, claim_type="stream"):
         df_tags["tag_name"].isin(GENRES["MUSIC"]),
         # This tag defines the podcast genre
         df_tags["tag_name"].isin(GENRES["PODCAST"]),
-        # This tag defines the audiobook genre
-        df_tags["tag_name"].isin(GENRES["AUDIOBOOK"]),
     ]
 
     genres = [
         "music_genre",
         "podcast_genre",
-        "audiobook_genre",
     ]
     # Tags categories
     outputs = [
@@ -145,7 +137,6 @@ def process_special_tags(df, claim_type="stream"):
             # Genres
             music_genre=("music_genre", unique_clean_list),
             podcast_genre=("podcast_genre", unique_clean_list),
-            audiobook_genre=("audiobook_genre", unique_clean_list),
             # Type
             **{COLUMN_TYPE: (COLUMN_TYPE, select_dominant_category)},
         )

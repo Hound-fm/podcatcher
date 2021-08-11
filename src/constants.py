@@ -64,6 +64,7 @@ CHANNEL_TYPE: Final = {
 # Popular irrelevant tags
 FILTER_TAGS: Final = [
     "audio",
+    "audiobook",
     "audiobooks",
     "lbrivox",
     "book",
