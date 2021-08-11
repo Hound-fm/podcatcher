@@ -88,6 +88,7 @@ def sync_channels_data(df):
         trending.append(claim_trending)
         languages.append(claim_languages)
         perm_urls.append(claim_perm_url)
+        thumbnails.append(thumbnail)
 
     # Append columns
     df_results["tags"] = tags
@@ -95,6 +96,7 @@ def sync_channels_data(df):
     df_results["trending"] = trending
     df_results["languages"] = languages
     df_results["perm_url"] = perm_urls
+    df_results["thumbnail"] = thumbnails
 
     # Return new dataframe
     return df_results
