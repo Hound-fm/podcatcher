@@ -40,8 +40,9 @@ def unix_time_millis():
     return int(datetime.now().timestamp() * 1000)
 
 
+# Normalized "today" timestamp
 def now_timestamp():
-    return int(pd.Timestamp.utcnow().timestamp)
+    return int(pd.Timestamp.utcnow().normalize().timestamp())
 
 
 def get_current_time():
