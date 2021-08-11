@@ -22,7 +22,6 @@ def sync():
 # Sync cache data
 @cli.command()
 def sync_cache():
-    Elastic()
     sync_elastic_search()
 
 
