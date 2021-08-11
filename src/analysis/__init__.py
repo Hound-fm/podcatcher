@@ -21,7 +21,7 @@ delay = config["DEFAULT_TIMEOUT_DELAY"]
 def stop_scan(error=True):
     global dataset_chunk_index
     last_index = (dataset_chunk_index - 1) if (dataset_chunk_index > -1) else -1
-    main_status.update_status({"chunk_index": last_index})
+    main_status.update_status({"chunk_index": last_index, "updated": now_timestamp()})
     # Handle process error
     if error:
         log.error(f"Failed to process dataset chunk on index: {dataset_chunk_index}")
@@ -29,9 +29,7 @@ def stop_scan(error=True):
         raise SystemExit(0)
     else:
         sync_elastic_search()
-        main_status.update_status(
-            {"sync": True, "init_sync": True, "updated": now_timestamp()}
-        )
+        main_status.update_status({"sync": True, "init_sync": True})
         log.info(f"Sync completed!")
 
 
