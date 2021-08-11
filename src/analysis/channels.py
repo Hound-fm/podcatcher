@@ -33,8 +33,10 @@ def process_channels(df):
     # SDK failed to sync data
     if df_channels.empty:
         return df_channels
+
     # Process channels tags
     df_tags = process_tags(df_channels, "channel")
+
     # Merge tags data
     df_channels = df_channels.drop(columns="tags")
 

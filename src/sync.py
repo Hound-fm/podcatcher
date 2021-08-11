@@ -30,6 +30,7 @@ def sync_channels_data(df):
     trending = []
     languages = []
     perm_urls = []
+    thumbnails = []
 
     # Sdk api request
     urls = df_results["cannonical_url"].tolist()
@@ -48,6 +49,7 @@ def sync_channels_data(df):
         # Claim metadata
         metadata = res[url]
         # default values
+        thumbnail = ""
         claim_tags = []
         claim_status = "spent"
         claim_trending = 0
@@ -61,15 +63,20 @@ def sync_channels_data(df):
 
         # Get claim stats
         if "meta" in metadata:
-            if "trending_mixed" in metadata["meta"]:
-                claim_trending = metadata["meta"]["trending_mixed"]
+            meta = metadata["meta"]
+            if "trending_mixed" in meta:
+                claim_trending = meta["trending_mixed"]
 
         # Get claim value metadata
         if "value" in metadata:
-            if "tags" in metadata["value"]:
-                claim_tags = set(metadata["value"]["tags"])
-            if "languages" in metadata["value"]:
-                claim_languages = metadata["value"]["languages"]
+            value = metadata["value"]
+            if "languages" in value:
+                claim_languages = value["languages"]
+            if "tags" in value:
+                claim_tags = set(value["tags"])
+            if "thumbnail" in value:
+                if "url" in value["thumbnail"]:
+                    thumbnail = value["thumbnail"]["url"]
 
         # Get claim url
         if "permanent_url" in metadata:
@@ -106,6 +113,7 @@ def sync_streams_data(df):
     trending = []
     languages = []
     perm_urls = []
+    thumbnails = []
 
     # Sdk api request
     urls = df_results["cannonical_url"].tolist()
@@ -124,6 +132,7 @@ def sync_streams_data(df):
         # Claim metadata
         metadata = res[url]
         # default values
+        thumbnail = ""
         claim_tags = []
         claim_status = "spent"
         claim_license = None
@@ -141,21 +150,26 @@ def sync_streams_data(df):
 
         # Get claim stats
         if "meta" in metadata:
-            if "reposted" in metadata["meta"]:
-                claim_reposted = metadata["meta"]["reposted"]
-            if "trending_mixed" in metadata["meta"]:
-                claim_trending = metadata["meta"]["trending_mixed"]
+            meta = metadata["meta"]
+            if "reposted" in meta:
+                claim_reposted = meta["reposted"]
+            if "trending_mixed" in meta:
+                claim_trending = meta["trending_mixed"]
 
         # Get claim value metadata
         if "value" in metadata:
-            if "license" in metadata["value"]:
-                license = metadata["value"]["license"].lower()
+            value = metadata["value"]
+            if "license" in value:
+                license = value["license"].lower()
                 if (len(license) > 3) and (license != "none"):
-                    claim_license = metadata["value"]["license"]
-            if "languages" in metadata["value"]:
-                claim_languages = metadata["value"]["languages"]
-            if "tags" in metadata["value"]:
-                claim_tags = set(metadata["value"]["tags"])
+                    claim_license = value["license"]
+            if "languages" in value:
+                claim_languages = value["languages"]
+            if "tags" in value:
+                claim_tags = set(value["tags"])
+            if "thumbnail" in value:
+                if "url" in value["thumbnail"]:
+                    thumbnail = value["thumbnail"]["url"]
 
         # Get claim url
         if "permanent_url" in metadata:
@@ -169,6 +183,7 @@ def sync_streams_data(df):
         trending.append(claim_trending)
         languages.append(claim_languages)
         perm_urls.append(claim_perm_url)
+        thumbnails.append(thumbnail)
 
     # Append columns
     df_results["tags"] = tags
@@ -178,6 +193,7 @@ def sync_streams_data(df):
     df_results["trending"] = trending
     df_results["languages"] = languages
     df_results["perm_url"] = perm_urls
+    df_results["thumbnail"] = thumbnails
 
     # Return new dataframe
     return df_results

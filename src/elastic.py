@@ -12,6 +12,7 @@ MAPPINGS_STREAM = {
     "tags": "keyword",
     "genres": "keyword",
     "trending": "float",
+    "thumbnail": "text",
     "reposted": "integer",
     "license": "text",
     "channel_id": "text",
@@ -23,6 +24,7 @@ MAPPINGS_STREAM = {
 MAPPINGS_CHANNEL = {
     # keywords
     "trending": "float",
+    "thumbnail": "text",
     "channel_name": "text",
     "channel_title": "text",
     "channel_type": "keyword",

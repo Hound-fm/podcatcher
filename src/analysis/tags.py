@@ -85,13 +85,6 @@ def process_special_tags(df, claim_type="stream"):
         "tag_name",
     ] = CATEGORIES["PODCAST"]
 
-    df_tags.loc[
-        df_tags["tag_name"].str.contains(
-            "|".join(MULTILINGUAL["AUDIOBOOK"]), case=False
-        ),
-        "tag_name",
-    ] = CATEGORIES["AUDIOBOOK"]
-
     conditions = [
         # This tag defines the category type
         df_tags["tag_name"].isin(CATEGORIES_LIST),
