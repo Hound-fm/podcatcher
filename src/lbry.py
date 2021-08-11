@@ -7,12 +7,13 @@ import time
 import httpx
 import numpy as np
 from logger import log
+from config import config
 from utils import unix_time_millis, increase_delay_time
 from constants import LBRY_API, LBRY_TOKEN, LBRY_COM_API
 
 # Global values
 TIMEOUT_RETRY = 0
-TIMEOUT_DELAY = 30
+TIMEOUT_DELAY = config["DEFAULT_TIMEOUT_DELAY"]
 MAX_TIMEOUT_RETRY = 5
 
 
@@ -55,8 +56,8 @@ def lbry_proxy(method, payload_data, retry=0):
         global TIMEOUT_RETRY
         TIMEOUT_RETRY = retry + 1
         if TIMEOUT_RETRY < MAX_TIMEOUT_RETRY:
-            log.warning(f"Lbry-proxy: {method} - {exc}")
-            log.info(f"Lbry-proxy: {method} - retry...")
+            log.warning(f"LBRY_PROXY: {method} - {exc}")
+            log.info(f"LBRY_PROXY: {method} - retry...")
             time.sleep(increase_delay_time(TIMEOUT_DELAY, TIMEOUT_RETRY))
             return lbry_proxy(method, payload_data, TIMEOUT_RETRY)
         else:

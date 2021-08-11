@@ -1,8 +1,9 @@
-from utils import unix_time_millis, save_json_cache, load_json_cache
+from utils import save_json_cache, load_json_cache
 
 DEFAULT_STATUS = {
     "sync": False,
-    "updated": None,
+    "updated": 0,
+    "init_sync": False,
     "chunk_index": -1,
 }
 
@@ -15,18 +16,17 @@ class Status:
         status = load_json_cache("status")
         self.status = status or DEFAULT_STATUS
 
-    # Methods
-    def update_status(self, success=False, index=0):
-        # New status
-        self.status = {
-            "sync": success,
-            "updated": unix_time_millis(),
-            "chunk_index": index,
-        }
-        # Save cache data
+    def reset_status(self):
+        self.status = DEFAULT_STATUS
         save_json_cache("status", self.status)
 
-    # Actions
+    def update_status(self, newStatus={}):
+        self.sync_status()
+        self.status = {
+            **self.status,
+            **newStatus,
+        }
+        save_json_cache("status", self.status)
 
 
 main_status = Status()

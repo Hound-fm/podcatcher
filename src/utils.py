@@ -1,4 +1,5 @@
 import json
+import time
 import datetime
 import numpy as np
 import pandas as pd
@@ -37,6 +38,10 @@ def safe_date(date_value):
 
 def unix_time_millis():
     return int(datetime.now().timestamp() * 1000)
+
+
+def now_timestamp():
+    return int(pd.Timestamp.utcnow().timestamp)
 
 
 def get_current_time():
@@ -90,6 +95,16 @@ def increase_delay_time(delay=0, index=1, delta=0.64):
 
 def get_outpoints(df):
     return df["transaction_hash_id"] + ":" + df["vout"].astype(str)
+
+
+def get_permanent_url(df):
+    df_claims = df.copy()
+    df_claims = df_claims[["stream_id", "name"]]
+    df_claims["permanent_url"] = (
+        df_claims["name"].astype(str) + "#" + df_claims["stream_id"]
+    )
+    df_claims["permanent_url"] = df_claims["permanent_url"].astype(str)
+    return df_claims["permanent_url"]
 
 
 def get_streams_cannonical_url(df):

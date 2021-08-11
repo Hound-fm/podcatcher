@@ -85,6 +85,8 @@ def bulk_fetch_streams():
             # Outpoint data
             claim.transaction_hash_id,
             claim.vout,
+            # Updated time
+            claim.modified_at,
         )
         .where(
             filter_by_content_type()
@@ -107,6 +109,8 @@ def bulk_fetch_channels(channels):
             # Outpoint data
             claim.transaction_hash_id,
             claim.vout,
+            # Updated time
+            claim.modified_at,
         )
         .where(claim.claim_id.isin(channels) & filter_invalid_channels())
     )

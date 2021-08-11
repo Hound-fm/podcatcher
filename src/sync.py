@@ -20,9 +20,17 @@ def sync_elastic_search():
 
 
 # Load unavailable data of streams from sdk
-def sync_channels_data(df):
-    # New dataframe
-    df_results = df.copy()
+def sync_channels_metadata(def_ref_channels, channels_metadata={}):
+    # No channels to sync
+    if def_ref_channels.empty:
+        return pd.DataFrame()
+
+    df_results = def_ref_channels[["channel_id"]].copy()
+    channels_ids = df_results["channel_id"].unique()
+
+    # No channels or metadata to sync
+    if not (len(channels_metadata) and len(channels_ids)):
+        return df_results
 
     # Columns
     tags = []
@@ -33,21 +41,11 @@ def sync_channels_data(df):
     thumbnails = []
 
     # Sdk api request
-    urls = df_results["cannonical_url"].tolist()
-    payload = {"urls": urls}
-    res = lbry_proxy("resolve", payload)
-    if res:
-        if "error" in res:
-            log.error(f'Error: {res["error"]["message"]}')
-            return pd.DataFrame()
-        if "result" in res:
-            res = res["result"]
-    else:
-        return pd.DataFrame()
-
-    for url in urls:
+    for channel_id in channels_ids:
         # Claim metadata
-        metadata = res[url]
+        metadata = {}
+        if channel_id in channels_metadata:
+            metadata = channels_metadata[channel_id]
         # default values
         thumbnail = ""
         claim_tags = []
@@ -95,17 +93,16 @@ def sync_channels_data(df):
     df_results["status"] = status
     df_results["trending"] = trending
     df_results["languages"] = languages
-    df_results["perm_url"] = perm_urls
     df_results["thumbnail"] = thumbnails
+    df_results["permanent_url"] = perm_urls
 
     # Return new dataframe
     return df_results
 
 
-# Load unavailable data of streams from sdk
-def sync_streams_data(df):
-    # New dataframe
-    df_results = df.copy()
+# Load unavailable data of claims from sdk
+def sync_claims_metadata(df_ref_streams, def_ref_channels):
+    df_streams_metadata = df_ref_streams[["stream_id", "url"]].copy()
 
     # Columns
     tags = []
@@ -117,18 +114,21 @@ def sync_streams_data(df):
     perm_urls = []
     thumbnails = []
 
+    # Store channel metadata
+    channels_metadata = {}
+
     # Sdk api request
-    urls = df_results["cannonical_url"].tolist()
+    urls = df_streams_metadata["url"].tolist()
     payload = {"urls": urls}
     res = lbry_proxy("resolve", payload)
     if res:
         if "error" in res:
             log.error(f'Error: {res["error"]["message"]}')
-            return pd.DataFrame()
+            return {"streams": pd.DataFrame(), "channels": pd.DataFrame()}
         if "result" in res:
             res = res["result"]
     else:
-        return pd.DataFrame()
+        return {"streams": pd.DataFrame(), "channels": pd.DataFrame()}
 
     for url in urls:
         # Claim metadata
@@ -148,7 +148,10 @@ def sync_streams_data(df):
         if "claim_op" in metadata:
             if "is_channel_signature_valid" in metadata:
                 if metadata["is_channel_signature_valid"]:
+                    channel = metadata["signing_channel"]
                     claim_status = "active"
+                    if "claim_id" in channel:
+                        channels_metadata[channel["claim_id"]] = channel
 
         # Get claim stats
         if "meta" in metadata:
@@ -187,15 +190,18 @@ def sync_streams_data(df):
         perm_urls.append(claim_perm_url)
         thumbnails.append(thumbnail)
 
-    # Append columns
-    df_results["tags"] = tags
-    df_results["status"] = status
-    df_results["license"] = licenses
-    df_results["reposted"] = reposted
-    df_results["trending"] = trending
-    df_results["languages"] = languages
-    df_results["perm_url"] = perm_urls
-    df_results["thumbnail"] = thumbnails
+    # Append stream metadata columns
+    df_streams_metadata["tags"] = tags
+    df_streams_metadata["status"] = status
+    df_streams_metadata["license"] = licenses
+    df_streams_metadata["reposted"] = reposted
+    df_streams_metadata["trending"] = trending
+    df_streams_metadata["languages"] = languages
+    df_streams_metadata["thumbnail"] = thumbnails
+    df_streams_metadata["permanent_url"] = perm_urls
+
+    # Append channels metadata columns
+    df_channels_metada = sync_channels_metadata(def_ref_channels, channels_metadata)
 
     # Return new dataframe
-    return df_results
+    return {"streams": df_streams_metadata, "channels": df_channels_metada}

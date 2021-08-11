@@ -11,14 +11,11 @@ import httpx
 from constants import CHAINQUERY_API
 from logger import log
 from utils import increase_delay_time
-from analysis.constants import (
-    DEFAULT_CHUNK_SIZE,
-    DEFAULT_TIMOUT_DELAY,
-)
+from config import config
 
 # Global values
 TIMEOUT_RETRY = 0
-TIMEOUT_DELAY = DEFAULT_TIMOUT_DELAY
+TIMEOUT_DELAY = config["DEFAULT_TIMEOUT_DELAY"]
 MAX_TIMEOUT_RETRY = 5
 
 # Fix issues with chainquery api and pypika query format:
@@ -28,7 +25,7 @@ def formatQuery(q):
 
 # Default options for queries
 default_query_options = {
-    "limit": DEFAULT_CHUNK_SIZE,
+    "limit": config["DEFAULT_CHUNK_SIZE"],
     "offset": 0,
 }
 
@@ -63,8 +60,8 @@ def query(q, options=default_query_options, retry=0):
         global TIMEOUT_RETRY
         TIMEOUT_RETRY = retry + 1
         if TIMEOUT_RETRY < MAX_TIMEOUT_RETRY:
-            log.warning(f"Chainquery: {exc}")
-            log.info(f"Chainquery: retry...")
+            log.warning(f"CHAINQUERY: {exc}")
+            log.info(f"CHAINQUERY: retry...")
             time.sleep(increase_delay_time(TIMEOUT_DELAY, TIMEOUT_RETRY))
             return query(q, options, TIMEOUT_RETRY)
         else:
