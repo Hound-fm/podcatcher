@@ -1,6 +1,6 @@
 import time
 import pandas as pd
-from utils import now_timestamp, get_permanent_url
+from utils import now_timestamp, get_streams_urls
 from sync import sync_elastic_search, sync_claims_metadata
 from config import config
 from logger import log
@@ -72,8 +72,8 @@ def process_dataset_chunk():
     # Not enough data to process chunk
     if not chunk.valid:
         return False
-    # Get cannonical_url
-    chunk.df_streams["url"] = get_permanent_url(chunk.df_streams)
+    # Get urls
+    chunk.df_streams["url"] = get_streams_urls(chunk.df_streams)
     # Get updated metadata from sdk
     metadata = sync_claims_metadata(chunk.df_streams, chunk.df_channels)
 

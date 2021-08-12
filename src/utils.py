@@ -42,7 +42,7 @@ def unix_time_millis():
 
 # Normalized "today" timestamp
 def now_timestamp():
-    return int(pd.Timestamp.utcnow().normalize().timestamp())
+    return pd.Timestamp.utcnow().normalize().isoformat()
 
 
 def get_current_time():
@@ -98,7 +98,7 @@ def get_outpoints(df):
     return df["transaction_hash_id"] + ":" + df["vout"].astype(str)
 
 
-def get_permanent_url(df):
+def get_streams_urls(df):
     df_claims = df.copy()
     df_claims = df_claims[["stream_id", "name"]]
     df_claims["permanent_url"] = (
@@ -106,34 +106,3 @@ def get_permanent_url(df):
     )
     df_claims["permanent_url"] = df_claims["permanent_url"].astype(str)
     return df_claims["permanent_url"]
-
-
-def get_streams_cannonical_url(df):
-    df_claims = df.copy()
-    df_claims = df_claims[["stream_id", "name", "channel_name", "channel_id"]]
-    df_claims["claim_char"] = df_claims["stream_id"].str[0]
-    df_claims["channel_char"] = df_claims["channel_id"].str.slice(0, 2)
-    df_claims["cannonical_url"] = (
-        +df_claims["channel_name"].astype(str)
-        + "#"
-        + df_claims["channel_char"].astype(str)
-        + "/"
-        + df_claims["name"].astype(str)
-        + "#"
-        + df_claims["claim_char"].astype(str)
-    )
-    df_claims["cannonical_url"] = df_claims["cannonical_url"].astype(str)
-    return df_claims["cannonical_url"]
-
-
-def get_channels_cannonical_url(df):
-    df_claims = df.copy()
-    df_claims = df_claims[["channel_name", "channel_id"]]
-    df_claims["channel_char"] = df_claims["channel_id"].str.slice(0, 2)
-    df_claims["cannonical_url"] = (
-        +df_claims["channel_name"].astype(str)
-        + "#"
-        + df_claims["channel_char"].astype(str)
-    )
-    df_claims["cannonical_url"] = df_claims["cannonical_url"].astype(str)
-    return df_claims["cannonical_url"]
