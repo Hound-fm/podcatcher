@@ -106,12 +106,14 @@ def process_special_tags(df, claim_type="stream"):
 
     # Find tag categories
     df_tags["category"] = np.select(conditions, outputs, "tags")
-
     # Pivot data
     df_tags = df_tags.reset_index(drop=True)
     df_pivot = df_tags.pivot(columns="category", values="tag_name")
 
     # Add missing columns
+    if not COLUMN_TYPE in df_pivot.columns:
+        df_pivot[COLUMN_TYPE] = np.nan
+
     if not "tags" in df_pivot.columns:
         df_pivot["tags"] = np.nan
 
@@ -136,7 +138,6 @@ def process_special_tags(df, claim_type="stream"):
         .reset_index()
     )
 
-    df_tags[COLUMN_TYPE] = df_tags[COLUMN_TYPE]
     df_tags["genres"] = select_dominant_genres(df_tags, CLAIM_TYPE)
 
     # Return relevant columns

@@ -1,8 +1,7 @@
 from utils import save_json_cache, load_json_cache
 
 DEFAULT_STATUS = {
-    "sync": False,
-    "updated": 0,
+    "updated": False,
     "init_sync": False,
     "chunk_index": -1,
 }

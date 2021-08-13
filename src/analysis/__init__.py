@@ -1,7 +1,7 @@
 import time
 import pandas as pd
 from utils import now_timestamp, get_streams_urls
-from sync import sync_elastic_search, sync_claims_metadata
+from sync import sync_elastic_search, sync_metadata
 from config import config
 from logger import log
 from dataset import build_dataset_chunk
@@ -14,23 +14,26 @@ from .podcasts import process_podcasts
 
 # Global values
 dataset_chunk_index = -1
-dataset_chunk_size = config["DEFAULT_CHUNK_SIZE"]
-delay = config["DEFAULT_TIMEOUT_DELAY"]
+dataset_chunk_size = config["CHUNK_SIZE"]
+delay = config["TIMEOUT_DELAY"]
 
 # Stop scan
 def stop_scan(error=True):
     global dataset_chunk_index
     last_index = (dataset_chunk_index - 1) if (dataset_chunk_index > -1) else -1
-    main_status.update_status({"chunk_index": last_index, "updated": now_timestamp()})
+    main_status.update_status(
+        {"chunk_index": last_index, "updated": now_timestamp().isoformat()}
+    )
     # Handle process error
     if error:
-        log.error(f"Failed to process dataset chunk on index: {dataset_chunk_index}")
-        main_status.update_status({"sync": False})
-        raise SystemExit(0)
+        log.error(f"SCAN: Failed to process dataset chunk {dataset_chunk_index}")
+        log.info(f"HELP: Use command 'retry-sync' to fix it.")
     else:
         sync_elastic_search()
-        main_status.update_status({"sync": True, "init_sync": True})
-        log.info(f"Sync completed!")
+        main_status.update_status({"init_sync": True})
+        log.info(f"SYNC: Sync completed!")
+    # Stop process
+    raise SystemExit(0)
 
 
 # Scan all existent claims
@@ -41,13 +44,14 @@ def start_scan():
     # Build is empty
     if ready == "end":
         stop_scan(False)
+        return
     # Build completed
     if ready:
         # Process dataset chunk
         success = process_dataset_chunk()
         # Dataset chunk was processed successfully
         if success:
-            log.info(f"Tasks completed for chunk on index: {dataset_chunk_index}")
+            log.info(f"SCAN: Tasks completed for chunk {dataset_chunk_index}")
             # Delay for timeout errors
             time.sleep(delay)
             # Load next dataset chunk
@@ -72,10 +76,13 @@ def process_dataset_chunk():
     # Not enough data to process chunk
     if not chunk.valid:
         return False
+    # No relevant data found. Skip further analysis.
+    if chunk.valid == "empty":
+        return True
     # Get urls
     chunk.df_streams["url"] = get_streams_urls(chunk.df_streams)
     # Get updated metadata from sdk
-    metadata = sync_claims_metadata(chunk.df_streams, chunk.df_channels)
+    metadata = sync_metadata(chunk.df_streams, chunk.df_channels)
 
     # Sdk failed
     if (
@@ -93,6 +100,11 @@ def process_dataset_chunk():
 
     # Process channels
     chunk.df_channels = process_channels(chunk.df_channels)
+
+    # No relevant data found. Skip further analysis.
+    if chunk.df_channels.empty:
+        return True
+
     # Process all streams
     chunk.df_streams = process_streams(chunk.df_streams)
     # Merge channel data
@@ -107,8 +119,10 @@ def process_dataset_chunk():
     # No relevant data found. Skip further analysis.
     if chunk.df_streams.empty:
         return True
+
     # Process podcast series and episodes
     process_music(chunk)
     process_podcasts(chunk)
+
     # Success status
     return True

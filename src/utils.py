@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 from os import path, listdir, remove as removeFile
 from config import config
+from itertools import islice
 from datetime import datetime
 from pygments import highlight
 from pygments.lexers import JsonLexer
@@ -42,7 +43,7 @@ def unix_time_millis():
 
 # Normalized "today" timestamp
 def now_timestamp():
-    return pd.Timestamp.utcnow().normalize().isoformat()
+    return pd.Timestamp.utcnow().normalize()
 
 
 def get_current_time():
@@ -55,6 +56,7 @@ def load_df_cache(file_name):
         return data
     except:
         pass
+    return pd.DataFrame()
 
 
 def load_json_cache(file_name):
@@ -96,6 +98,14 @@ def increase_delay_time(delay=0, index=1, delta=0.64):
 
 def get_outpoints(df):
     return df["transaction_hash_id"] + ":" + df["vout"].astype(str)
+
+
+def truncate_string(text, max=32):
+    truncated = str(text)
+    if len(truncated) > max:
+        truncated = truncated[0 : max - 1]
+        truncated += "..."
+    return truncated
 
 
 def get_streams_urls(df):

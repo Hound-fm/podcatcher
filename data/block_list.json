@@ -1,4 +1,10 @@
 {
+  "KEYWORDS": [
+    "audio",
+    "channel",
+    "audiobook",
+    "complete work"
+  ],
   "CHANNELS": [
     "583da6b6238a4e29fd0b0b7e4e90ba727724d8d1",
     "8f2382fdeb6ac8aa3d30343cae5c72d63fb43132",
@@ -71,6 +77,10 @@
     "e473c86fc00faac4550855711fdfe9dc5f032426",
     "4091e5203cd4b3b34ac668381d15b225ebf0e7e3",
     "02c1cec8a1e20eb87662016651eb013e76606693",
-    "d0b0c33059d591a29be8543b9301b253df22be5f"
+    "d0b0c33059d591a29be8543b9301b253df22be5f",
+    "264fca208f76ed31737330b95c3c03a936ed62e8",
+    "b174a8f5ff9e7197b739b72a57cd58a6d40a4279",
+    "eda3fbdbb1ab9da8f911e74a9071cbbc58f42447",
+    "e7db8a4a31eee63ff2b172fcc475adb9179f300a"
   ]
 }

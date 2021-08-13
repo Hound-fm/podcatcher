@@ -9,6 +9,7 @@ def process_music(chunk):
         (chunk.df_streams.stream_type == STREAM_TYPE["MUSIC"])
         & (chunk.df_streams.channel_type == CHANNEL_TYPE["MUSIC"])
         & chunk.df_streams.license.notnull()
+        & ~chunk.df_streams.license.isin(["None", "none", ""])
     ].copy()
     # No songs on dataset chunk
     if df_tracks.empty:

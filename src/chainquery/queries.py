@@ -2,8 +2,10 @@
 import os
 import json
 from config import config
-from pypika import Query, Order, Tables, Criterion, functions as fn
+from utils import now_timestamp
+from pypika import Query, Order, Tables, Criterion, Order, functions as fn
 from constants import CLAIM_TYPE, CONTENT_TYPE_AUDIO
+from status import main_status
 
 # Load block list
 with open(config["BLOCK_LIST"], "r") as f:
@@ -73,27 +75,37 @@ def filter_invalid_channels():
 # Query for searching all audio content
 def bulk_fetch_streams():
     # Basic query
-    q = (
-        Query.from_(claim)
-        .select(
-            claim.name,
-            claim.title,
-            claim.claim_id.as_("stream_id"),
-            claim.audio_duration.as_("duration"),
-            # Publisher data
-            claim.publisher_id.as_("channel_id"),
-            # Outpoint data
-            claim.transaction_hash_id,
-            claim.vout,
-            # Updated time
-            claim.modified_at,
+    q = Query.from_(claim).select(
+        claim.name,
+        claim.title,
+        claim.claim_id.as_("stream_id"),
+        claim.audio_duration.as_("duration"),
+        # Publisher data
+        claim.publisher_id.as_("channel_id"),
+        # Outpoint data
+        claim.transaction_hash_id,
+        claim.vout,
+        # Updated time
+        claim.modified_at,
+    )
+
+    # Full sync completed. Search for recent streams.
+    current = main_status.status
+    if current["init_sync"] and current["updated"]:
+        q = q.where(
+            filter_by_content_type()
+            & filter_by_audio_duration()
+            & filter_invalid_streams()
+            & claim.modified_at
+            > current["updated"]
         )
-        .where(
+    else:
+        # Initial sync. Search for all streams
+        q = q.where(
             filter_by_content_type()
             & filter_by_audio_duration()
             & filter_invalid_streams()
         )
-    )
     # returns new query
     return q
 

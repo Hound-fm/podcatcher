@@ -11,8 +11,12 @@ config = {
 }
 
 # Convert env vars to correct type
-if "DEFAULT_CHUNK_SIZE" in config:
-    config["DEFAULT_CHUNK_SIZE"] = int(config["DEFAULT_CHUNK_SIZE"])
+if "CHUNK_SIZE" in config:
+    config["CHUNK_SIZE"] = int(config["CHUNK_SIZE"])
 
-if "DEFAULT_TIMEOUT_DELAY" in config:
-    config["DEFAULT_TIMEOUT_DELAY"] = int(config["DEFAULT_TIMEOUT_DELAY"])
+if "TIMEOUT_DELAY" in config:
+    config["TIMEOUT_DELAY"] = int(config["TIMEOUT_DELAY"])
+
+
+if "MAX_TIMEOUT_RETRY" in config:
+    config["MAX_TIMEOUT_RETRY"] = int(config["MAX_TIMEOUT_RETRY"])

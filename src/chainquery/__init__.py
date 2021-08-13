@@ -10,13 +10,13 @@ import time
 import httpx
 from constants import CHAINQUERY_API
 from logger import log
-from utils import increase_delay_time
+from utils import increase_delay_time, truncate_string
 from config import config
 
 # Global values
 TIMEOUT_RETRY = 0
-TIMEOUT_DELAY = config["DEFAULT_TIMEOUT_DELAY"]
-MAX_TIMEOUT_RETRY = 5
+TIMEOUT_DELAY = config["TIMEOUT_DELAY"]
+MAX_TIMEOUT_RETRY = config["MAX_TIMEOUT_RETRY"]
 
 # Fix issues with chainquery api and pypika query format:
 def formatQuery(q):
@@ -25,7 +25,7 @@ def formatQuery(q):
 
 # Default options for queries
 default_query_options = {
-    "limit": config["DEFAULT_CHUNK_SIZE"],
+    "limit": config["CHUNK_SIZE"],
     "offset": 0,
 }
 
@@ -53,7 +53,7 @@ def query(q, options=default_query_options, retry=0):
     # Handle http request errors
     except httpx.HTTPStatusError as exc:
         log.error(
-            f"Error response {exc.response.status_code} while requesting {exc.request.url!r}."
+            f"Error response {exc.response.status_code} while requesting {truncate_string(exc.request.url)!r}."
         )
     # Handle timeout errors
     except httpx.TimeoutException as exc:
@@ -65,7 +65,11 @@ def query(q, options=default_query_options, retry=0):
             time.sleep(increase_delay_time(TIMEOUT_DELAY, TIMEOUT_RETRY))
             return query(q, options, TIMEOUT_RETRY)
         else:
-            log.error(f"HTTP Exception for {exc.request.url} - {exc}")
+            log.error(
+                f"HTTP Exception for {truncate_string(exc.request.url)!r} - {exc}"
+            )
     # Handle request errors
     except httpx.RequestError as exc:
-        log.error(f"An error occurred while requesting {exc.request.url!r}.")
+        log.error(
+            f"An error occurred while requesting {truncate_string(exc.request.url)!r}."
+        )

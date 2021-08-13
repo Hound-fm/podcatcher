@@ -8,13 +8,13 @@ import httpx
 import numpy as np
 from logger import log
 from config import config
-from utils import unix_time_millis, increase_delay_time
+from utils import unix_time_millis, increase_delay_time, truncate_string
 from constants import LBRY_API, LBRY_TOKEN, LBRY_COM_API
 
 # Global values
 TIMEOUT_RETRY = 0
-TIMEOUT_DELAY = config["DEFAULT_TIMEOUT_DELAY"]
-MAX_TIMEOUT_RETRY = 5
+TIMEOUT_DELAY = config["TIMEOUT_DELAY"]
+MAX_TIMEOUT_RETRY = config["MAX_TIMEOUT_RETRY"]
 
 
 def api_get_request(url, url_params={}, payload={}):
@@ -27,10 +27,12 @@ def api_get_request(url, url_params={}, payload={}):
         data = res["data"]
         return data
     except httpx.RequestError as exc:
-        log.error(f"An error occurred while requesting {exc.request.url!r}.")
+        log.error(
+            f"An error occurred while requesting {truncate_string(exc.request.url)!r}."
+        )
     except httpx.HTTPStatusError as exc:
         log.error(
-            f"Error response {exc.response.status_code} while requesting {exc.request.url!r}."
+            f"Error response {exc.response.status_code} while requesting {truncate_string(exc.request.url)!r}."
         )
 
 
@@ -49,7 +51,7 @@ def lbry_proxy(method, payload_data, retry=0):
     # Handle http request errors
     except httpx.HTTPStatusError as exc:
         log.error(
-            f"Error response {exc.response.status_code} while requesting {exc.request.url!r}."
+            f"Error response {exc.response.status_code} while requesting {truncate_string(exc.request.url)!r}."
         )
     # Handle timeout errors
     except httpx.TimeoutException as exc:
@@ -61,10 +63,14 @@ def lbry_proxy(method, payload_data, retry=0):
             time.sleep(increase_delay_time(TIMEOUT_DELAY, TIMEOUT_RETRY))
             return lbry_proxy(method, payload_data, TIMEOUT_RETRY)
         else:
-            log.error(f"HTTP Exception for {exc.request.url} - {exc}")
+            log.error(
+                f"HTTP Exception for {truncate_string(exc.request.url)!r} - {exc}"
+            )
     # Handle request errors
     except httpx.RequestError as exc:
-        log.error(f"An error occurred while requesting {exc.request.url!r}.")
+        log.error(
+            f"An error occurred while requesting {truncate_string(exc.request.url)!r}."
+        )
 
     return res
 
