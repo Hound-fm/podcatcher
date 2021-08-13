@@ -2,7 +2,6 @@ import eland as ed
 from logger import console
 from config import config
 from elasticsearch import Elasticsearch
-from elasticsearch import helpers
 from constants import ELASTIC_INDICES
 
 MAPPINGS_STREAM = {
