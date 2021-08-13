@@ -19,7 +19,7 @@ MAX_TIMEOUT_RETRY = config["MAX_TIMEOUT_RETRY"]
 def api_get_request(url, url_params={}, payload={}):
     try:
         # Initial request test
-        res = httpx.get(LBRY_COM_API + url, params=url_params)
+        res = httpx.get(config["LBRY_API"] + url, params=url_params)
         res.raise_for_status()
         # Parse to json and return results
         res = res.json()
