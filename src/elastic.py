@@ -52,7 +52,7 @@ class Elastic:
                 if not self.client.indices.exists(index=index):
                     self.client.indices.create(index=index)
         except Exception as error:
-            console.error(error)
+            console.error("ELASTIC_SEARCH", error)
 
     def destroy_data(self):
         try:
@@ -60,7 +60,7 @@ class Elastic:
                 if self.client.indices.exists(index=index):
                     self.client.indices.delete(index=index)
         except Exception as error:
-            console.error(error)
+            console.error("ELASTIC_SEARCH", error)
 
     # Get data frame from index
     def get_df(self, index, columns=[]):

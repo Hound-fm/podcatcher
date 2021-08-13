@@ -52,23 +52,28 @@ def query(q, options=default_query_options, retry=0):
     # Handle http request errors
     except httpx.HTTPStatusError as exc:
         console.error(
-            f"Error response {exc.response.status_code} while requesting {truncate_string(exc.request.url)!r}."
+            "CHAINQUERY",
+            f"Error response {exc.response.status_code} while requesting {truncate_string(exc.request.url)!r}.",
         )
     # Handle timeout errors
     except httpx.TimeoutException as exc:
         global TIMEOUT_RETRY
         TIMEOUT_RETRY = retry + 1
         if TIMEOUT_RETRY < MAX_TIMEOUT_RETRY:
-            console.warning(f"CHAINQUERY: {exc}")
-            console.info(f"CHAINQUERY: retry...")
+            console.warning("CHAINQUERY", exc)
+            console.log("CHAINQUERY", "Retry query...")
             time.sleep(increase_delay_time(TIMEOUT_DELAY, TIMEOUT_RETRY))
             return query(q, options, TIMEOUT_RETRY)
         else:
             console.error(
-                f"HTTP Exception for {truncate_string(exc.request.url)!r} - {exc}"
+                "CHAINQUERY",
+                f"HTTP Exception for {truncate_string(exc.request.url)!r}",
+                exc,
             )
     # Handle request errors
     except httpx.RequestError as exc:
         console.error(
-            f"An error occurred while requesting {truncate_string(exc.request.url)!r}."
+            "CHAINQUERY",
+            f"An error occurred while requesting {truncate_string(exc.request.url)!r}.",
+            exec,
         )

@@ -27,11 +27,13 @@ def api_get_request(url, url_params={}, payload={}):
         return data
     except httpx.RequestError as exc:
         console.error(
-            f"An error occurred while requesting {truncate_string(exc.request.url)!r}."
+            "LBRY_API",
+            f"An error occurred while requesting {truncate_string(exc.request.url)!r}.",
         )
     except httpx.HTTPStatusError as exc:
         console.error(
-            f"Error response {exc.response.status_code} while requesting {truncate_string(exc.request.url)!r}."
+            "LBRY_API",
+            f"Error response {exc.response.status_code} while requesting {truncate_string(exc.request.url)!r}.",
         )
 
 
@@ -50,25 +52,28 @@ def lbry_proxy(method, payload_data, retry=0):
     # Handle http request errors
     except httpx.HTTPStatusError as exc:
         console.error(
-            f"Error response {exc.response.status_code} while requesting {truncate_string(exc.request.url)!r}."
+            "LBRY_SDK",
+            f"Error response {exc.response.status_code} while requesting {truncate_string(exc.request.url)!r}.",
         )
     # Handle timeout errors
     except httpx.TimeoutException as exc:
         global TIMEOUT_RETRY
         TIMEOUT_RETRY = retry + 1
         if TIMEOUT_RETRY < MAX_TIMEOUT_RETRY:
-            log.warning(f"LBRY_PROXY: {method} - {exc}")
-            console.info(f"LBRY_PROXY: {method} - retry...")
+            log.warning("LBRY_SDK", method, {exc})
+            console.log("LBRY_SDK", method, "Retry...")
             time.sleep(increase_delay_time(TIMEOUT_DELAY, TIMEOUT_RETRY))
             return lbry_proxy(method, payload_data, TIMEOUT_RETRY)
         else:
             console.error(
-                f"HTTP Exception for {truncate_string(exc.request.url)!r} - {exc}"
+                "LBRY_SDK",
+                f"HTTP Exception for {truncate_string(exc.request.url)!r} - {exc}",
             )
     # Handle request errors
     except httpx.RequestError as exc:
         console.error(
-            f"An error occurred while requesting {truncate_string(exc.request.url)!r}."
+            "LBRY_SDK",
+            f"An error occurred while requesting {truncate_string(exc.request.url)!r}.",
         )
 
     return res
@@ -83,11 +88,14 @@ def api_post_request(url, payload={}):
     # Handle http request errors
     except httpx.HTTPStatusError as exc:
         console.error(
-            f"Error response {exc.response.status_code} while requesting {exc.request.url!r}."
+            "LBRY_API",
+            f"Error response {exc.response.status_code} while requesting {exc.request.url!r}.",
         )
     # Handle request errors
     except httpx.RequestError as exc:
-        console.error(f"An error occurred while requesting {exc.request.url!r}.")
+        console.error(
+            "LBRY_API", f"An error occurred while requesting {exc.request.url!r}."
+        )
 
 
 def get_view_counts(claim_ids):
@@ -97,7 +105,7 @@ def get_view_counts(claim_ids):
         return view_counts["data"]
 
     except NameError:
-        console.error("Failed to retrive view counts")
+        console.error("LBRY_API", "Failed to retrive view counts")
         return np.zeros(len(claim_ids))
 
 
@@ -108,7 +116,7 @@ def get_filtered_outpoints():
         filtered = api_get_request("file/list_filtered")["outpoints"]
         return set([*blocked, *filtered])
     except NameError:
-        console.error("Failed retrive blacklisted outpoints")
+        console.error("LBRY_API", "Failed retrive blacklisted outpoints")
 
 
 # Expose filtered list

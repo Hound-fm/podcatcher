@@ -119,7 +119,8 @@ def sync_claims_metadata(streams_urls, channels_ids):
     res = lbry_proxy("resolve", payload)
     if res:
         if "error" in res:
-            console.error(f'Error: {res["error"]["message"]}')
+            if "message" in res["error"]:
+                console.error("LBRY_SDK", f"{res['error']['message']}")
             return {"streams": pd.DataFrame(), "channels": pd.DataFrame()}
         if "result" in res:
             res = res["result"]
@@ -235,7 +236,7 @@ def sync_metadata(df_ref_streams, df_ref_channels, max_chunk_size=100):
             continue
 
         console.update_status(
-            f"[green] Syncing metadata subset chunk ({len(chunks)}/{chunk_index})"
+            f"[green] --- Syncing metadata subset chunk ~ ({len(chunks)}/{chunk_index})"
         )
 
         chunk_metadata = sync_claims_metadata(chunk_urls, channels_ids)

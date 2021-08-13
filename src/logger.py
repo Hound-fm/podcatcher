@@ -27,10 +27,12 @@ class RichConsole:
         self.status_message = output
 
         if self.status:
-            self.status.stop()
-
-        self.status = self.console.status(self.status_message, spinner="bouncingBar")
-        self.status.start()
+            self.status.update(self.status_message)
+        else:
+            self.status = self.console.status(
+                self.status_message, spinner="bouncingBar"
+            )
+            self.status.start()
 
     def stop_status(self):
         self.busy = False
@@ -49,22 +51,34 @@ class RichConsole:
             self.status.start()
             self.busy = True
 
-    def log(self, output):
-        self.pause_status()
-        self.logger.log(output, extra={"markup": True})
-        self.resume_status()
+    def format_message(self, task="LOG", message=False, action=False):
+        output = ""
 
-    def info(self, output):
+        if task:
+            output += f"[cyan]{task}:[/] "
+
+        if message:
+            output += f"{message} "
+
+        if action:
+            output += f"[gray]~[/] [yellow]{action}[/]"
+
+        return output
+
+    def log(self, task="LOG", message=False, action=False):
+        output = self.format_message(task, message, action)
         self.pause_status()
         self.logger.info(output, extra={"markup": True})
         self.resume_status()
 
-    def error(self, output):
+    def error(self, task=False, message=False, action=False):
+        output = self.format_message(task, output, action)
         self.pause_status()
         self.logger.error(output, extra={"markup": True})
         self.resume_status()
 
-    def warning(self, output):
+    def warning(self, task=False, message=False, action=False):
+        output = self.format_message(task, message, action)
         self.pause_status()
         self.logger.warning(output, extra={"markup": True})
         self.resume_status()

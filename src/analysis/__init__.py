@@ -31,12 +31,14 @@ def stop_scan(error=True):
     )
     # Handle process error
     if error:
-        console.error(f"SYNC: Failed to process dataset chunk {dataset_chunk_index}")
-        console.info(f"HELP: Use command 'retry-sync' to fix it.")
+        console.error(
+            "SYNC", f"Dataset chunk {dataset_chunk_index}", "Failed to process!"
+        )
+        console.log("HELP", "Use command 'retry-sync' to fix it.")
     else:
         sync_elastic_search()
         main_status.update_status({"init_sync": True})
-        console.info(f"SYNC: Sync completed!")
+        console.log("SYNC", "Sync completed!")
     # Stop process
     raise SystemExit(0)
 
@@ -46,7 +48,7 @@ def start_scan():
     global dataset_chunk_index
     dataset_chunk_index += 1
     console.update_status(
-        f"[green] --- Dataset chunk {dataset_chunk_index} -> [yellow] Building..."
+        f"[green] --- Dataset chunk {dataset_chunk_index} ~ [yellow]Building..."
     )
     ready = build_dataset_chunk(dataset_chunk_index, dataset_chunk_size)
 
@@ -56,18 +58,19 @@ def start_scan():
         stop_scan(False)
     # Build completed
     if ready:
-        console.info(
-            f"SYNC: Dataset chunk {dataset_chunk_index} -> [yellow]Build completed!"
-        )
+        console.stop_status()
+        console.log("SYNC", f"Dataset chunk {dataset_chunk_index}", "Build completed!")
         console.update_status(
-            f"[green] --- Dataset chunk {dataset_chunk_index} -> [yellow]Scanning..."
+            f"[green] --- Dataset chunk {dataset_chunk_index} ~ [yellow]Scanning..."
         )
         # Process dataset chunk
         success = process_dataset_chunk()
         # Dataset chunk was processed successfully
         if success:
             console.stop_status()
-            console.info(f"SYNC: All tasks completed for chunk {dataset_chunk_index}")
+            console.log(
+                "SYNC", f"Dataset chunk {dataset_chunk_index}", "All tasks completed!"
+            )
             # Delay for timeout errors
             time.sleep(delay)
             # Load next dataset chunk
@@ -108,6 +111,8 @@ def process_dataset_chunk():
         or metadata["channels"].empty
     ):
         return False
+
+    console.log("SYNC", f"Dataset chunk {dataset_chunk_index}", "Synced metadata!")
 
     chunk.df_streams = pd.merge(chunk.df_streams, metadata["streams"], on="stream_id")
     chunk.df_channels = pd.merge(
