@@ -64,6 +64,11 @@ class RichConsole:
         self.logger.error(output, extra={"markup": True})
         self.resume_status()
 
+    def warning(self, output):
+        self.pause_status()
+        self.logger.warning(output, extra={"markup": True})
+        self.resume_status()
+
 
 # Global console
 console = RichConsole()

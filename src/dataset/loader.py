@@ -83,6 +83,24 @@ class Dataset_chunk_loader:
         if df_channels.empty:
             return df_channels
 
+        # Generate and append outpoints
+        df_channels["outpoint"] = (
+            df_channels["transaction_hash_id"] + ":" + df_channels["vout"].astype(str)
+        )
+
+        # Filter blocked content
+        if filtered_outpoints and len(filtered_outpoints) > 0:
+            filter_mask = ~df_channels.outpoint.isin(filtered_outpoints)
+            df_channels = df_channels.loc[filter_mask]
+
+        # Remove irrelevant columns
+        df_channels = df_channels.drop(
+            ["transaction_hash_id", "vout", "outpoint"], axis=1
+        )
+
+        if df_channels.empty:
+            return df_channels
+
         # Fix missing titles
         df_channels = df_channels[
             df_channels.channel_title.notnull()

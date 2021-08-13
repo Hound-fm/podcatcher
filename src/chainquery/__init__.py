@@ -59,7 +59,7 @@ def query(q, options=default_query_options, retry=0):
         global TIMEOUT_RETRY
         TIMEOUT_RETRY = retry + 1
         if TIMEOUT_RETRY < MAX_TIMEOUT_RETRY:
-            log.warning(f"CHAINQUERY: {exc}")
+            console.warning(f"CHAINQUERY: {exc}")
             console.info(f"CHAINQUERY: retry...")
             time.sleep(increase_delay_time(TIMEOUT_DELAY, TIMEOUT_RETRY))
             return query(q, options, TIMEOUT_RETRY)
