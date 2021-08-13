@@ -35,14 +35,6 @@ CLAIM_TYPE: Final = {
 # Content media type
 CONTENT_TYPE_AUDIO: Final = "audio"
 
-# Public chainquery API:
-CHAINQUERY_API: Final = "https://chainquery.lbry.io/api/sql"
-
-# Public lbry.com api
-LBRY_API: Final = "http://localhost:5279"
-LBRY_TOKEN: Final = "3Nk17Zn6MruF1N9KkbLAKLHFgnmu377M"
-LBRY_COM_API: Final = "https://api.lbry.com/"
-
 # Popular audio media types from schema.org
 STREAM_TYPES: Final = {"MusicRecording", "PodcastEpisode"}
 

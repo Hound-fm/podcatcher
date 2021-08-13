@@ -9,7 +9,6 @@ import numpy as np
 from logger import console
 from config import config
 from utils import unix_time_millis, increase_delay_time, truncate_string
-from constants import LBRY_API, LBRY_TOKEN, LBRY_COM_API
 
 # Global values
 TIMEOUT_RETRY = 0
@@ -47,7 +46,7 @@ def lbry_proxy(method, payload_data, retry=0):
     }
     # Initial request test
     try:
-        res = httpx.post(LBRY_API, headers=headers, json=payload).json()
+        res = httpx.post(config["LBRY_SDK_API"], headers=headers, json=payload).json()
     # Handle http request errors
     except httpx.HTTPStatusError as exc:
         console.error(
@@ -78,7 +77,7 @@ def lbry_proxy(method, payload_data, retry=0):
 def api_post_request(url, payload={}):
     try:
         # Initial request test
-        res = httpx.post(LBRY_COM_API + url, data=payload)
+        res = httpx.post(config["LBRY_API"] + url, data=payload)
         # Parse to json and return results
         return res.json()
     # Handle http request errors
@@ -93,7 +92,7 @@ def api_post_request(url, payload={}):
 
 def get_view_counts(claim_ids):
     try:
-        data = {"auth_token": LBRY_TOKEN, "claim_id": ",".join(claim_ids)}
+        data = {"auth_token": config["LBRY_API_TOKEN"], "claim_id": ",".join(claim_ids)}
         view_counts = api_post_request("file/view_count", data)
         return view_counts["data"]
 

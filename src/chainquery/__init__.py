@@ -8,7 +8,6 @@
 # Import dependencies
 import time
 import httpx
-from constants import CHAINQUERY_API
 from logger import console
 from utils import increase_delay_time, truncate_string
 from config import config
@@ -42,7 +41,7 @@ def query(q, options=default_query_options, retry=0):
         # Send the sql query as url parameter
         payload = {"query": queryString}
         # Initial request
-        res = httpx.get(CHAINQUERY_API, params=payload)
+        res = httpx.get(config["CHAINQUERY_API"], params=payload)
         res.raise_for_status()
         # Parse response data to json
         res = res.json()
