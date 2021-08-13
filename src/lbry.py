@@ -6,7 +6,7 @@ import json
 import time
 import httpx
 import numpy as np
-from logger import log
+from logger import console
 from config import config
 from utils import unix_time_millis, increase_delay_time, truncate_string
 from constants import LBRY_API, LBRY_TOKEN, LBRY_COM_API
@@ -27,11 +27,11 @@ def api_get_request(url, url_params={}, payload={}):
         data = res["data"]
         return data
     except httpx.RequestError as exc:
-        log.error(
+        console.error(
             f"An error occurred while requesting {truncate_string(exc.request.url)!r}."
         )
     except httpx.HTTPStatusError as exc:
-        log.error(
+        console.error(
             f"Error response {exc.response.status_code} while requesting {truncate_string(exc.request.url)!r}."
         )
 
@@ -50,7 +50,7 @@ def lbry_proxy(method, payload_data, retry=0):
         res = httpx.post(LBRY_API, headers=headers, json=payload).json()
     # Handle http request errors
     except httpx.HTTPStatusError as exc:
-        log.error(
+        console.error(
             f"Error response {exc.response.status_code} while requesting {truncate_string(exc.request.url)!r}."
         )
     # Handle timeout errors
@@ -59,16 +59,16 @@ def lbry_proxy(method, payload_data, retry=0):
         TIMEOUT_RETRY = retry + 1
         if TIMEOUT_RETRY < MAX_TIMEOUT_RETRY:
             log.warning(f"LBRY_PROXY: {method} - {exc}")
-            log.info(f"LBRY_PROXY: {method} - retry...")
+            console.info(f"LBRY_PROXY: {method} - retry...")
             time.sleep(increase_delay_time(TIMEOUT_DELAY, TIMEOUT_RETRY))
             return lbry_proxy(method, payload_data, TIMEOUT_RETRY)
         else:
-            log.error(
+            console.error(
                 f"HTTP Exception for {truncate_string(exc.request.url)!r} - {exc}"
             )
     # Handle request errors
     except httpx.RequestError as exc:
-        log.error(
+        console.error(
             f"An error occurred while requesting {truncate_string(exc.request.url)!r}."
         )
 
@@ -83,12 +83,12 @@ def api_post_request(url, payload={}):
         return res.json()
     # Handle http request errors
     except httpx.HTTPStatusError as exc:
-        log.error(
+        console.error(
             f"Error response {exc.response.status_code} while requesting {exc.request.url!r}."
         )
     # Handle request errors
     except httpx.RequestError as exc:
-        log.error(f"An error occurred while requesting {exc.request.url!r}.")
+        console.error(f"An error occurred while requesting {exc.request.url!r}.")
 
 
 def get_view_counts(claim_ids):
@@ -98,7 +98,7 @@ def get_view_counts(claim_ids):
         return view_counts["data"]
 
     except NameError:
-        log.error("Failed to retrive view counts")
+        console.error("Failed to retrive view counts")
         return np.zeros(len(claim_ids))
 
 
@@ -109,7 +109,7 @@ def get_filtered_outpoints():
         filtered = api_get_request("file/list_filtered")["outpoints"]
         return set([*blocked, *filtered])
     except NameError:
-        log.error("Failed retrive blacklisted outpoints")
+        console.error("Failed retrive blacklisted outpoints")
 
 
 # Expose filtered list

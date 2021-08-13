@@ -1,5 +1,5 @@
 import eland as ed
-from logger import log
+from logger import console
 from config import config
 from elasticsearch import Elasticsearch
 from elasticsearch import helpers
@@ -53,7 +53,7 @@ class Elastic:
                 if not self.client.indices.exists(index=index):
                     self.client.indices.create(index=index)
         except Exception as error:
-            log.error(error)
+            console.error(error)
 
     def destroy_data(self):
         try:
@@ -61,7 +61,7 @@ class Elastic:
                 if self.client.indices.exists(index=index):
                     self.client.indices.delete(index=index)
         except Exception as error:
-            log.error(error)
+            console.error(error)
 
     # Get data frame from index
     def get_df(self, index, columns=[]):

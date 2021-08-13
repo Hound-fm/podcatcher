@@ -3,7 +3,7 @@ import pandas as pd
 from elastic import Elastic
 from lbry import lbry_proxy
 from utils import load_df_cache
-from logger import log
+from logger import console
 from constants import ELASTIC_INDICES, ELASTIC_INDEX
 
 # Sync cache data to elasticsearch
@@ -119,7 +119,7 @@ def sync_claims_metadata(streams_urls, channels_ids):
     res = lbry_proxy("resolve", payload)
     if res:
         if "error" in res:
-            log.error(f'Error: {res["error"]["message"]}')
+            console.error(f'Error: {res["error"]["message"]}')
             return {"streams": pd.DataFrame(), "channels": pd.DataFrame()}
         if "result" in res:
             res = res["result"]
@@ -216,6 +216,7 @@ def sync_metadata(df_ref_streams, df_ref_channels, max_chunk_size=100):
     channels_ids = df_ref_channels["channel_id"].unique()
     # Initial chunk
     chunks = [streams_urls]
+    chunk_index = 0
 
     # No data to sync
     if not (len(streams_urls) or len(channels_ids)):
@@ -228,11 +229,14 @@ def sync_metadata(df_ref_streams, df_ref_channels, max_chunk_size=100):
 
     for chunk in chunks:
         chunk_urls = list(chunk)
+        chunk_index += 1
 
         if not len(chunk_urls):
             continue
 
-        log.info("SYNC: metadata subset chunk...")
+        console.update_status(
+            f"[green] Syncing metadata subset chunk ({len(chunks)}/{chunk_index})"
+        )
 
         chunk_metadata = sync_claims_metadata(chunk_urls, channels_ids)
         if not chunk_metadata["streams"].empty:

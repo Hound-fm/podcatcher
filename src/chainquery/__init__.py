@@ -9,7 +9,7 @@
 import time
 import httpx
 from constants import CHAINQUERY_API
-from logger import log
+from logger import console
 from utils import increase_delay_time, truncate_string
 from config import config
 
@@ -52,7 +52,7 @@ def query(q, options=default_query_options, retry=0):
 
     # Handle http request errors
     except httpx.HTTPStatusError as exc:
-        log.error(
+        console.error(
             f"Error response {exc.response.status_code} while requesting {truncate_string(exc.request.url)!r}."
         )
     # Handle timeout errors
@@ -61,15 +61,15 @@ def query(q, options=default_query_options, retry=0):
         TIMEOUT_RETRY = retry + 1
         if TIMEOUT_RETRY < MAX_TIMEOUT_RETRY:
             log.warning(f"CHAINQUERY: {exc}")
-            log.info(f"CHAINQUERY: retry...")
+            console.info(f"CHAINQUERY: retry...")
             time.sleep(increase_delay_time(TIMEOUT_DELAY, TIMEOUT_RETRY))
             return query(q, options, TIMEOUT_RETRY)
         else:
-            log.error(
+            console.error(
                 f"HTTP Exception for {truncate_string(exc.request.url)!r} - {exc}"
             )
     # Handle request errors
     except httpx.RequestError as exc:
-        log.error(
+        console.error(
             f"An error occurred while requesting {truncate_string(exc.request.url)!r}."
         )

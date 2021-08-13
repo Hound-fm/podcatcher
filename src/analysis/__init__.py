@@ -1,9 +1,10 @@
 import time
+import atexit
 import pandas as pd
 from utils import now_timestamp, get_streams_urls
 from sync import sync_elastic_search, sync_metadata
 from config import config
-from logger import log
+from logger import console
 from dataset import build_dataset_chunk
 from dataset.loader import Dataset_chunk_loader
 from status import main_status
@@ -19,19 +20,23 @@ delay = config["TIMEOUT_DELAY"]
 
 # Stop scan
 def stop_scan(error=True):
+    # Stop output of task status
+    console.stop_status()
+
     global dataset_chunk_index
     last_index = (dataset_chunk_index - 1) if (dataset_chunk_index > -1) else -1
+
     main_status.update_status(
         {"chunk_index": last_index, "updated": now_timestamp().isoformat()}
     )
     # Handle process error
     if error:
-        log.error(f"SCAN: Failed to process dataset chunk {dataset_chunk_index}")
-        log.info(f"HELP: Use command 'retry-sync' to fix it.")
+        console.error(f"SYNC: Failed to process dataset chunk {dataset_chunk_index}")
+        console.info(f"HELP: Use command 'retry-sync' to fix it.")
     else:
         sync_elastic_search()
         main_status.update_status({"init_sync": True})
-        log.info(f"SYNC: Sync completed!")
+        console.info(f"SYNC: Sync completed!")
     # Stop process
     raise SystemExit(0)
 
@@ -40,18 +45,29 @@ def stop_scan(error=True):
 def start_scan():
     global dataset_chunk_index
     dataset_chunk_index += 1
+    console.update_status(
+        f"[green] --- Dataset chunk {dataset_chunk_index} -> [yellow] Building..."
+    )
     ready = build_dataset_chunk(dataset_chunk_index, dataset_chunk_size)
+
     # Build is empty
     if ready == "end":
+        console.stop_status()
         stop_scan(False)
-        return
     # Build completed
     if ready:
+        console.info(
+            f"SYNC: Dataset chunk {dataset_chunk_index} -> [yellow]Build completed!"
+        )
+        console.update_status(
+            f"[green] --- Dataset chunk {dataset_chunk_index} -> [yellow]Scanning..."
+        )
         # Process dataset chunk
         success = process_dataset_chunk()
         # Dataset chunk was processed successfully
         if success:
-            log.info(f"SCAN: Tasks completed for chunk {dataset_chunk_index}")
+            console.stop_status()
+            console.info(f"SYNC: All tasks completed for chunk {dataset_chunk_index}")
             # Delay for timeout errors
             time.sleep(delay)
             # Load next dataset chunk
@@ -126,3 +142,11 @@ def process_dataset_chunk():
 
     # Success status
     return True
+
+
+# Handle program exit
+def exit_handler():
+    console.stop_status()
+
+
+atexit.register(exit_handler)
