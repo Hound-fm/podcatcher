@@ -16,6 +16,7 @@
 - Python [3.8](https://www.python.org/)
 - Poetry [1.1.7](https://python-poetry.org/)
 - Elasticsearch [7.14.0](https://www.elastic.co/downloads/elasticsearch)
+- Lbry-sdk [0.99.0](https://github.com/lbryio/lbry-sdk)
 
 
 ## Development
