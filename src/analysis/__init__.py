@@ -32,13 +32,13 @@ def stop_scan(error=True):
     # Handle process error
     if error:
         console.error(
-            "SYNC", f"Dataset chunk {dataset_chunk_index}", "Failed to process!"
+            "SYNC", f"Dataset chunk {dataset_chunk_index}", action="Failed to process!"
         )
-        console.log("HELP", "Use command 'retry-sync' to fix it.")
+        console.info("HELP", "Use command 'retry-sync' to fix it.")
     else:
         sync_elastic_search()
         main_status.update_status({"init_sync": True})
-        console.log("SYNC", "Sync completed!")
+        console.info("SYNC", "Sync completed!")
     # Stop process
     raise SystemExit(0)
 
@@ -58,8 +58,12 @@ def start_scan():
         stop_scan(False)
     # Build completed
     if ready:
-        console.stop_status()
-        console.log("SYNC", f"Dataset chunk {dataset_chunk_index}", "Build completed!")
+        console.info(
+            "SYNC",
+            f"Dataset chunk {dataset_chunk_index}",
+            action="Build completed!",
+            stop_status=True,
+        )
         console.update_status(
             f"[green] --- Dataset chunk {dataset_chunk_index} ~ [yellow]Scanning..."
         )
@@ -67,9 +71,11 @@ def start_scan():
         success = process_dataset_chunk()
         # Dataset chunk was processed successfully
         if success:
-            console.stop_status()
-            console.log(
-                "SYNC", f"Dataset chunk {dataset_chunk_index}", "All tasks completed!"
+            console.info(
+                "SYNC",
+                f"Dataset chunk {dataset_chunk_index}",
+                action="All tasks completed!",
+                stop_status=True,
             )
             # Delay for timeout errors
             time.sleep(delay)
@@ -112,7 +118,12 @@ def process_dataset_chunk():
     ):
         return False
 
-    console.log("SYNC", f"Dataset chunk {dataset_chunk_index}", "Synced metadata!")
+    console.info(
+        "SYNC",
+        f"Dataset chunk {dataset_chunk_index}",
+        action="Synced metadata!",
+        stop_status=True,
+    )
 
     chunk.df_streams = pd.merge(chunk.df_streams, metadata["streams"], on="stream_id")
     chunk.df_channels = pd.merge(

@@ -4,6 +4,11 @@ from rich.logging import RichHandler
 
 
 class RichConsole:
+    # Static values
+    LEVEL_INFO = "INFO"
+    LEVEL_ERROR = "ERROR"
+    LEVEL_WARNING = "WARNING"
+
     def __init__(self):
         self.busy = False
         self.status = False
@@ -65,23 +70,59 @@ class RichConsole:
 
         return output
 
-    def log(self, task="LOG", message=False, action=False):
-        output = self.format_message(task, message, action)
-        self.pause_status()
+    def print_info(self, output):
         self.logger.info(output, extra={"markup": True})
-        self.resume_status()
 
-    def error(self, task=False, message=False, action=False):
-        output = self.format_message(task, output, action)
-        self.pause_status()
+    def print_error(self, output):
         self.logger.error(output, extra={"markup": True})
-        self.resume_status()
 
-    def warning(self, task=False, message=False, action=False):
-        output = self.format_message(task, message, action)
-        self.pause_status()
+    def print_warning(self, output):
         self.logger.warning(output, extra={"markup": True})
-        self.resume_status()
+
+    def log(self, task="LOG", message="", **kwargs):
+
+        # Extra args
+        extra = {
+            "level": RichConsole.LEVEL_INFO,
+            "action": False,
+            "stop_status": False,
+            **kwargs,
+        }
+        # Format log message
+        output = self.format_message(task, message, extra["action"])
+        # Map print levels
+        print_levels = {
+            f"{RichConsole.LEVEL_INFO}": self.print_info,
+            f"{RichConsole.LEVEL_ERROR}": self.print_error,
+            f"{RichConsole.LEVEL_WARNING}": self.print_warning,
+        }
+
+        # Select print level
+        print_level = print_levels.get(extra["level"], False)
+
+        # Skip output logging
+        if not print_level:
+            return
+        # Pause or stop status / progress bar
+        if extra["stop_status"]:
+            self.stop_status()
+        else:
+            self.pause_status()
+        # output logging
+        print_level(output)
+        # Resume status / progress bar
+        if not extra["stop_status"]:
+            self.resume_status()
+
+    # Aliases for console.log levels
+    def info(self, task=False, message=False, **kwargs):
+        self.log(task, message, level=RichConsole.LEVEL_INFO, **kwargs)
+
+    def error(self, task=False, message=False, **kwargs):
+        self.log(task, message, level=RichConsole.LEVEL_ERROR, **kwargs)
+
+    def warning(self, task=False, message=False, **kwargs):
+        self.log(task, message, level=RichConsole.LEVEL_WARNING, **kwargs)
 
 
 # Global console

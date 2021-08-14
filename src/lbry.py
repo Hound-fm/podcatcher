@@ -60,8 +60,8 @@ def lbry_proxy(method, payload_data, retry=0):
         global TIMEOUT_RETRY
         TIMEOUT_RETRY = retry + 1
         if TIMEOUT_RETRY < MAX_TIMEOUT_RETRY:
-            console.warning("LBRY_SDK", method, {exc})
-            console.log("LBRY_SDK", method, "Retry...")
+            console.warning("LBRY_SDK", method, action=exc)
+            console.info("LBRY_SDK", method, action="Retry...")
             time.sleep(increase_delay_time(TIMEOUT_DELAY, TIMEOUT_RETRY))
             return lbry_proxy(method, payload_data, TIMEOUT_RETRY)
         else:
