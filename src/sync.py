@@ -29,13 +29,15 @@ def sync_channels_metadata(channels_ids, channels_metadata={}):
         return df_results
 
     # Columns
-    ids = []
+    # Normal python list
     tags = []
-    status = []
-    trending = []
     languages = []
-    thumbnails = []
-    creation_times = []
+    # Numpy arrays
+    ids = np.array([], dtype=np.str_)
+    status = np.array([], dtype=np.str_)
+    trending = np.array([], dtype=np.float64)
+    thumbnails = np.array([], dtype=np.str_)
+    creation_times = np.array([], dtype=np.int8)
 
     # Sdk api request
     for channel_id in channels_ids:
@@ -80,13 +82,14 @@ def sync_channels_metadata(channels_ids, channels_metadata={}):
                         thumbnail = value["thumbnail"]["url"]
 
             # Fill columns values
-            ids.append(channel_id)
+            ids = np.append(ids, channel_id)
+            status = np.append(status, claim_status)
+            trending = np.append(trending, claim_trending)
+            thumbnails = np.append(thumbnails, thumbnail)
+            creation_times = np.append(creation_times, creation_time)
+            # Use normal python list for nested lists
             tags.append(claim_tags)
-            status.append(claim_status)
-            trending.append(claim_trending)
             languages.append(claim_languages)
-            thumbnails.append(thumbnail)
-            creation_times.append(creation_time)
 
     # Append id
     df_results["channel_id"] = ids
@@ -106,21 +109,23 @@ def sync_channels_metadata(channels_ids, channels_metadata={}):
 def sync_claims_metadata(streams_urls, channels_ids):
     df_streams_metadata = pd.DataFrame()
 
-    # Columns
-    ids = []
-    tags = []
-    status = []
-    licenses = []
-    reposted = []
-    trending = []
-    languages = []
-    thumbnails = []
-    fee_amount = []
-    fee_currency = []
-    release_times = []
-
     # Store channel metadata
     channels_metadata = {}
+
+    # Columns
+    # Normal python list
+    tags = []
+    languages = []
+    # Numpy arrays
+    ids = np.array([], dtype=np.str_)
+    status = np.array([], dtype=np.str_)
+    licenses = np.array([], dtype=np.str_)
+    reposted = np.array([], dtype=np.int8)
+    trending = np.array([], dtype=np.float64)
+    thumbnails = np.array([], dtype=np.str_)
+    release_times = np.array([], dtype=np.float64)
+    fee_amount = np.array([], dtype=np.int8)
+    fee_currency = np.array([], dtype=np.str_)
 
     # Sdk api request
     payload = {"urls": streams_urls}
@@ -140,11 +145,11 @@ def sync_claims_metadata(streams_urls, channels_ids):
             metadata = res[url]
             # default values
             thumbnail = ""
-            claim_id = None
+            claim_id = ""
             claim_tags = []
             release_time = 0
             claim_status = "spent"
-            claim_license = None
+            claim_license = ""
             claim_reposted = 0
             claim_trending = 0
             claim_languages = []
@@ -208,20 +213,19 @@ def sync_claims_metadata(streams_urls, channels_ids):
                 if "release_time" in value:
                     release_time = int(value["release_time"])
 
-            # Append id
-            ids.append(claim_id)
             # Fill columns values
+            ids = np.append(ids, claim_id)
+            status = np.append(status, claim_status)
+            licenses = np.append(licenses, claim_license)
+            reposted = np.append(reposted, claim_reposted)
+            trending = np.append(trending, claim_trending)
+            thumbnails = np.append(thumbnails, thumbnail)
+            fee_amount = np.append(fee_amount, claim_fee["amount"])
+            fee_currency = np.append(fee_currency, claim_fee["currency"])
+            release_times = np.append(release_times, release_time)
+            # Use normal python list for nested lists
             tags.append(claim_tags)
-            status.append(claim_status)
-            licenses.append(claim_license)
-            reposted.append(claim_reposted)
-            trending.append(claim_trending)
             languages.append(claim_languages)
-            thumbnails.append(thumbnail)
-            release_times.append(release_time)
-            # Append fee data
-            fee_currency.append(claim_fee["currency"])
-            fee_amount.append(claim_fee["amount"])
 
     # Append stream metadata columns
     df_streams_metadata["stream_id"] = ids
