@@ -34,8 +34,8 @@ def sync_channels_metadata(channels_ids, channels_metadata={}):
     status = []
     trending = []
     languages = []
-    perm_urls = []
     thumbnails = []
+    creation_times = []
 
     # Sdk api request
     for channel_id in channels_ids:
@@ -47,17 +47,26 @@ def sync_channels_metadata(channels_ids, channels_metadata={}):
             claim_tags = []
             claim_status = "spent"
             claim_trending = 0
-            claim_perm_url = None
             claim_languages = []
-            claim_perm_url = None
+            creation_time = 0
             # Get claim status
             if "claim_op" in metadata:
                 claim_status = "active"
+
+            if not claim_status or claim_status != "active":
+                continue
+
+            # Used as fallback for "creation_timestamp"
+            if "timestamp" in metadata:
+                creation_time = metadata["timestamp"]
+
             # Get claim stats
             if "meta" in metadata:
                 meta = metadata["meta"]
-            if "trending_mixed" in meta:
-                claim_trending = meta["trending_mixed"]
+                if "trending_mixed" in meta:
+                    claim_trending = meta["trending_mixed"]
+                if "creation_timestamp" in meta:
+                    creation_time = meta["creation_timestamp"]
 
             # Get claim value metadata
             if "value" in metadata:
@@ -70,27 +79,24 @@ def sync_channels_metadata(channels_ids, channels_metadata={}):
                     if "url" in value["thumbnail"]:
                         thumbnail = value["thumbnail"]["url"]
 
-            # Get claim url
-            if "permanent_url" in metadata:
-                claim_perm_url = metadata["permanent_url"]
-
             # Fill columns values
             ids.append(channel_id)
             tags.append(claim_tags)
             status.append(claim_status)
             trending.append(claim_trending)
             languages.append(claim_languages)
-            perm_urls.append(claim_perm_url)
             thumbnails.append(thumbnail)
+            creation_times.append(creation_time)
 
-    # Append columns
+    # Append id
     df_results["channel_id"] = ids
+    # Append columns
     df_results["tags"] = tags
     df_results["status"] = status
     df_results["trending"] = trending
     df_results["languages"] = languages
     df_results["thumbnail"] = thumbnails
-    df_results["permanent_url"] = perm_urls
+    df_results["creation_time"] = creation_times
 
     # Return new dataframe
     return df_results
@@ -108,8 +114,10 @@ def sync_claims_metadata(streams_urls, channels_ids):
     reposted = []
     trending = []
     languages = []
-    perm_urls = []
     thumbnails = []
+    fee_amount = []
+    fee_currency = []
+    release_times = []
 
     # Store channel metadata
     channels_metadata = {}
@@ -134,17 +142,17 @@ def sync_claims_metadata(streams_urls, channels_ids):
             thumbnail = ""
             claim_id = None
             claim_tags = []
+            release_time = 0
             claim_status = "spent"
             claim_license = None
             claim_reposted = 0
             claim_trending = 0
-            claim_perm_url = None
             claim_languages = []
-            claim_perm_url = None
-
-            if "claim_id" in metadata:
-                claim_id = metadata["claim_id"]
-
+            # Fee data
+            claim_fee = {
+                "amount": 0.0,
+                "currency": "LBC",
+            }
             # Get claim status
             if "claim_op" in metadata:
                 if "is_channel_signature_valid" in metadata:
@@ -153,6 +161,18 @@ def sync_claims_metadata(streams_urls, channels_ids):
                         claim_status = "active"
                         if "claim_id" in channel:
                             channels_metadata[channel["claim_id"]] = channel
+
+            # Invalid stream. Skip metadata
+            if not claim_status or claim_status != "active":
+                continue
+
+            if "claim_id" in metadata:
+                claim_id = metadata["claim_id"]
+
+            # Used as fallback for "release_time"
+            if "timestamp" in metadata:
+                release_time = metadata["timestamp"]
+
             # Get claim stats
             if "meta" in metadata:
                 meta = metadata["meta"]
@@ -160,13 +180,21 @@ def sync_claims_metadata(streams_urls, channels_ids):
                     claim_reposted = meta["reposted"]
                 if "trending_mixed" in meta:
                     claim_trending = meta["trending_mixed"]
+                # Used as fallback for "release_time"
+                if "creation_timestamp" in meta:
+                    release_time = meta["creation_timestamp"]
 
             # Get claim value metadata
             if "value" in metadata:
                 value = metadata["value"]
+                if "fee" in value:
+                    if "amount":
+                        claim_fee["amount"] = value["fee"]["amount"]
+                    if "currency":
+                        claim_fee["currency"] = value["fee"]["currency"]
                 if "license" in value:
                     license = value["license"].lower()
-                    if (len(license) > 3) and (license != "none"):
+                    if (len(license) > 0) and (license != "none"):
                         claim_license = value["license"]
                 if "languages" in value:
                     claim_languages = value["languages"]
@@ -175,21 +203,25 @@ def sync_claims_metadata(streams_urls, channels_ids):
                 if "thumbnail" in value:
                     if "url" in value["thumbnail"]:
                         thumbnail = value["thumbnail"]["url"]
+                # SDK returns release_time as string instead of int
+                # We need to convert it first:
+                if "release_time" in value:
+                    release_time = int(value["release_time"])
 
-            # Get claim url
-            if "permanent_url" in metadata:
-                claim_perm_url = metadata["permanent_url"]
-
-            # Fill columns values
+            # Append id
             ids.append(claim_id)
+            # Fill columns values
             tags.append(claim_tags)
             status.append(claim_status)
             licenses.append(claim_license)
             reposted.append(claim_reposted)
             trending.append(claim_trending)
             languages.append(claim_languages)
-            perm_urls.append(claim_perm_url)
             thumbnails.append(thumbnail)
+            release_times.append(release_time)
+            # Append fee data
+            fee_currency.append(claim_fee["currency"])
+            fee_amount.append(claim_fee["amount"])
 
     # Append stream metadata columns
     df_streams_metadata["stream_id"] = ids
@@ -200,7 +232,9 @@ def sync_claims_metadata(streams_urls, channels_ids):
     df_streams_metadata["trending"] = trending
     df_streams_metadata["languages"] = languages
     df_streams_metadata["thumbnail"] = thumbnails
-    df_streams_metadata["permanent_url"] = perm_urls
+    df_streams_metadata["release_time"] = release_times
+    df_streams_metadata["fee_amount"] = fee_amount
+    df_streams_metadata["fee_currency"] = fee_currency
 
     # Append channels metadata columns
     df_channels_metada = sync_channels_metadata(channels_ids, channels_metadata)

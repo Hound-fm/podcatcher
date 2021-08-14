@@ -112,7 +112,7 @@ def get_streams_urls(df):
     df_claims = df.copy()
     df_claims = df_claims[["stream_id", "name"]]
     df_claims["permanent_url"] = (
-        df_claims["name"].astype(str) + "#" + df_claims["stream_id"]
+        df_claims["name"].astype(str) + ":" + df_claims["stream_id"]
     )
     df_claims["permanent_url"] = df_claims["permanent_url"].astype(str)
     return df_claims["permanent_url"]
