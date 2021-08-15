@@ -35,9 +35,9 @@ def sync_channels_metadata(channels_ids, channels_metadata={}):
     # Numpy arrays
     ids = np.array([], dtype=np.str_)
     status = np.array([], dtype=np.str_)
-    trending = np.array([], dtype=np.float64)
+    trending = np.array([], dtype=np.float32)
     thumbnails = np.array([], dtype=np.str_)
-    creation_times = np.array([], dtype=np.int8)
+    creation_dates = np.array([], dtype=np.int32)
 
     # Sdk api request
     for channel_id in channels_ids:
@@ -50,7 +50,7 @@ def sync_channels_metadata(channels_ids, channels_metadata={}):
             claim_status = "spent"
             claim_trending = 0
             claim_languages = []
-            creation_time = 0
+            creation_date = 0
             # Get claim status
             if "claim_op" in metadata:
                 claim_status = "active"
@@ -58,9 +58,9 @@ def sync_channels_metadata(channels_ids, channels_metadata={}):
             if not claim_status or claim_status != "active":
                 continue
 
-            # Used as fallback for "creation_timestamp"
+            # Used as fallback for "release_date"
             if "timestamp" in metadata:
-                creation_time = metadata["timestamp"]
+                creation_date = metadata["timestamp"]
 
             # Get claim stats
             if "meta" in metadata:
@@ -68,7 +68,7 @@ def sync_channels_metadata(channels_ids, channels_metadata={}):
                 if "trending_mixed" in meta:
                     claim_trending = meta["trending_mixed"]
                 if "creation_timestamp" in meta:
-                    creation_time = meta["creation_timestamp"]
+                    creation_date = meta["creation_timestamp"]
 
             # Get claim value metadata
             if "value" in metadata:
@@ -80,13 +80,12 @@ def sync_channels_metadata(channels_ids, channels_metadata={}):
                 if "thumbnail" in value:
                     if "url" in value["thumbnail"]:
                         thumbnail = value["thumbnail"]["url"]
-
             # Fill columns values
             ids = np.append(ids, channel_id)
             status = np.append(status, claim_status)
             trending = np.append(trending, claim_trending)
             thumbnails = np.append(thumbnails, thumbnail)
-            creation_times = np.append(creation_times, creation_time)
+            creation_dates = np.append(creation_dates, creation_date)
             # Use normal python list for nested lists
             tags.append(claim_tags)
             languages.append(claim_languages)
@@ -99,7 +98,7 @@ def sync_channels_metadata(channels_ids, channels_metadata={}):
     df_results["trending"] = trending
     df_results["languages"] = languages
     df_results["thumbnail"] = thumbnails
-    df_results["creation_time"] = creation_times
+    df_results["creation_date"] = pd.to_datetime(creation_dates, utc=True, unit="s")
 
     # Return new dataframe
     return df_results
@@ -121,9 +120,9 @@ def sync_claims_metadata(streams_urls, channels_ids):
     status = np.array([], dtype=np.str_)
     licenses = np.array([], dtype=np.str_)
     reposted = np.array([], dtype=np.int8)
-    trending = np.array([], dtype=np.float64)
+    trending = np.array([], dtype=np.float32)
     thumbnails = np.array([], dtype=np.str_)
-    release_times = np.array([], dtype=np.float64)
+    release_dates = np.array([], dtype=np.int32)
     fee_amount = np.array([], dtype=np.int8)
     fee_currency = np.array([], dtype=np.str_)
 
@@ -147,7 +146,7 @@ def sync_claims_metadata(streams_urls, channels_ids):
             thumbnail = ""
             claim_id = ""
             claim_tags = []
-            release_time = 0
+            release_date = 0
             claim_status = "spent"
             claim_license = ""
             claim_reposted = 0
@@ -174,9 +173,9 @@ def sync_claims_metadata(streams_urls, channels_ids):
             if "claim_id" in metadata:
                 claim_id = metadata["claim_id"]
 
-            # Used as fallback for "release_time"
+            # Used as fallback for "release_date"
             if "timestamp" in metadata:
-                release_time = metadata["timestamp"]
+                release_date = metadata["timestamp"]
 
             # Get claim stats
             if "meta" in metadata:
@@ -185,9 +184,9 @@ def sync_claims_metadata(streams_urls, channels_ids):
                     claim_reposted = meta["reposted"]
                 if "trending_mixed" in meta:
                     claim_trending = meta["trending_mixed"]
-                # Used as fallback for "release_time"
+                # Used as fallback for "release_date"
                 if "creation_timestamp" in meta:
-                    release_time = meta["creation_timestamp"]
+                    release_date = meta["creation_timestamp"]
 
             # Get claim value metadata
             if "value" in metadata:
@@ -208,10 +207,10 @@ def sync_claims_metadata(streams_urls, channels_ids):
                 if "thumbnail" in value:
                     if "url" in value["thumbnail"]:
                         thumbnail = value["thumbnail"]["url"]
-                # SDK returns release_time as string instead of int
+                # SDK returns release_date as string instead of int
                 # We need to convert it first:
                 if "release_time" in value:
-                    release_time = int(value["release_time"])
+                    release_date = int(value["release_time"])
 
             # Fill columns values
             ids = np.append(ids, claim_id)
@@ -222,7 +221,7 @@ def sync_claims_metadata(streams_urls, channels_ids):
             thumbnails = np.append(thumbnails, thumbnail)
             fee_amount = np.append(fee_amount, claim_fee["amount"])
             fee_currency = np.append(fee_currency, claim_fee["currency"])
-            release_times = np.append(release_times, release_time)
+            release_dates = np.append(release_dates, release_date)
             # Use normal python list for nested lists
             tags.append(claim_tags)
             languages.append(claim_languages)
@@ -236,9 +235,11 @@ def sync_claims_metadata(streams_urls, channels_ids):
     df_streams_metadata["trending"] = trending
     df_streams_metadata["languages"] = languages
     df_streams_metadata["thumbnail"] = thumbnails
-    df_streams_metadata["release_time"] = release_times
     df_streams_metadata["fee_amount"] = fee_amount
     df_streams_metadata["fee_currency"] = fee_currency
+    df_streams_metadata["release_date"] = pd.to_datetime(
+        release_dates, utc=True, unit="s"
+    )
 
     # Append channels metadata columns
     df_channels_metada = sync_channels_metadata(channels_ids, channels_metadata)
