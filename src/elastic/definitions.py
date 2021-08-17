@@ -1,9 +1,11 @@
+from typing import Final
+
 # Static values
-INDEX = {"STREAM": "stream", "CHANNEL": "channel"}
-INDICES = set(INDEX.values())
+INDEX: Final = {"STREAM": "stream", "CHANNEL": "channel"}
+INDICES: Final = set(INDEX.values())
 
 # Autocomplete fields
-FIELDS_STREAM_AUTOCOMPLETE = [
+FIELDS_STREAM_AUTOCOMPLETE: Final = [
     "name",
     "title",
     "duration",
@@ -11,25 +13,25 @@ FIELDS_STREAM_AUTOCOMPLETE = [
     "channel_title",
 ]
 
-FIELDS_CHANNEL_AUTOCOMPLETE = [
+FIELDS_CHANNEL_AUTOCOMPLETE: Final = [
     "thumbnail",
     "channel_name",
     "channel_title",
 ]
 
 # Mappings templates
-MAPPINGS_STREAM_AUTOCOMPLETE = {
+MAPPINGS_STREAM_AUTOCOMPLETE: Final = {
     "genre": {"type": "search_as_you_type"},
     "title": {"type": "search_as_you_type"},
 }
 
-MAPPINGS_CHANNEL_AUTOCOMPLETE = {
+MAPPINGS_CHANNEL_AUTOCOMPLETE: Final = {
     "genre": {"type": "search_as_you_type"},
     "channel_title": {"type": "search_as_you_type"},
 }
 
 # Pandas to eland
-MAPPINGS_CHANNEL = {
+MAPPINGS_CHANNEL: Final = {
     "trending": "float",
     "thumbnail": "text",
     "channel_name": "text",
@@ -37,7 +39,7 @@ MAPPINGS_CHANNEL = {
     "channel_type": "keyword",
 }
 
-MAPPINGS_STREAM = {
+MAPPINGS_STREAM: Final = {
     "title": "text",
     "name": "text",
     "tags": "keyword",
