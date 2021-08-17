@@ -35,21 +35,21 @@ CLAIM_TYPE: Final = {
 # Content media type
 CONTENT_TYPE_AUDIO: Final = "audio"
 
-# Popular audio media types from schema.org
-STREAM_TYPES: Final = {"MusicRecording", "PodcastEpisode"}
-
 # Channel types
-CHANNEL_TYPES: Final = {"Artist", "PodcastSeries"}
 
 STREAM_TYPE: Final = {
-    "MUSIC": "MusicRecording",
-    "PODCAST": "PodcastEpisode",
+    "MUSIC": "music_recording",
+    "PODCAST": "podcast_episode",
 }
 
+STREAM_TYPES: Final = set(STREAM_TYPE.values())
+
 CHANNEL_TYPE: Final = {
-    "MUSIC": "Artist",
-    "PODCAST": "PodcastSeries",
+    "MUSIC": "artist",
+    "PODCAST": "podcast_series",
 }
+
+CHANNEL_TYPES: Final = set(CHANNEL_TYPE.values())
 
 # Popular irrelevant tags
 FILTER_TAGS: Final = [
@@ -67,17 +67,3 @@ FILTER_TAGS: Final = [
     "new music",
     "nocopyrightmusic",
 ]
-
-ELASTIC_INDICES: Final = [
-    "artists",
-    "podcast_series",
-    "music_recordings",
-    "podcast_episodes",
-]
-
-ELASTIC_INDEX: Final = {
-    "ARTISTS": "artists",
-    "PODCAST_SERIES": "podcast_series",
-    "MUSIC_RECORDINGS": "music_recordings",
-    "PODCAST_EPISODES": "podcast_episodes",
-}

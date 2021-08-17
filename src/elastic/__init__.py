@@ -1,33 +1,9 @@
 import eland as ed
 from logger import console
 from config import config
+from constants import STREAM_TYPES, CHANNEL_TYPES
 from elasticsearch import Elasticsearch
-from constants import ELASTIC_INDICES
-
-MAPPINGS_STREAM = {
-    # keywords
-    "title": "text",
-    "name": "text",
-    "tags": "keyword",
-    "genres": "keyword",
-    "trending": "float",
-    "thumbnail": "text",
-    "reposted": "integer",
-    "license": "text",
-    "channel_id": "text",
-    "channel_name": "text",
-    "channel_title": "text",
-    "stream_type": "keyword",
-}
-
-MAPPINGS_CHANNEL = {
-    # keywords
-    "trending": "float",
-    "thumbnail": "text",
-    "channel_name": "text",
-    "channel_title": "text",
-    "channel_type": "keyword",
-}
+from .definitions import INDEX, INDICES, MAPPINGS_STREAM, MAPPINGS_CHANNEL
 
 
 class Elastic:
@@ -56,7 +32,23 @@ class Elastic:
 
     def destroy_data(self):
         try:
-            for index in ELASTIC_INDICES:
+            # Destroy all autocomplete indices
+            self.destroy_cache_indices()
+            self.destroy_autocomplete_indices()
+        except Exception as error:
+            console.error("ELASTIC_SEARCH", error)
+
+    def destroy_cache_indices(self):
+        # Destroy main indices
+        for index in INDICES:
+            if self.client.indices.exists(index=index):
+                self.client.indices.delete(index=index)
+
+    def destroy_autocomplete_indices(self):
+        try:
+            # Append autocomplete prefix
+            for index in {*STREAM_TYPES, *CHANNEL_TYPES}:
+                index = f"{index}_autocomplete"
                 if self.client.indices.exists(index=index):
                     self.client.indices.delete(index=index)
         except Exception as error:
@@ -73,17 +65,17 @@ class Elastic:
         return pandas_df
 
     # Append chunk from dataFrame to elastic-search
-    def append_df_chunk(self, index_name, df, chunk_type="stream"):
+    def append_df_chunk(self, index_name, df):
         mappings = None
         # Select mappings
-        if chunk_type == "stream":
+        if index_name == INDEX["STREAM"]:
             mappings = MAPPINGS_STREAM
 
-        if chunk_type == "channel":
+        if index_name == INDEX["CHANNEL"]:
             mappings = MAPPINGS_CHANNEL
 
         # Use pandas index for elasticsearch id
-        df = df.set_index(f"{chunk_type}_id")
+        df = df.set_index(f"{index_name}_id")
 
         ed.pandas_to_eland(
             df,
@@ -93,3 +85,21 @@ class Elastic:
             es_dest_index=index_name,
             es_type_overrides=mappings,
         )
+
+    def generate_autocomple_index(self, index, source, template_mappings):
+        # Append autocomplete prefix
+        dest_index = f"{index}_autocomplete"
+
+        reindex_body = {
+            "dest": {"index": dest_index},
+            "source": source,
+        }
+
+        autocomplete_body = {"mappings": {"properties": template_mappings}}
+
+        # Create empty index if doesn't exists
+        if not self.client.indices.exists(index=dest_index):
+            self.client.indices.create(index=dest_index, body=autocomplete_body)
+
+        # Reindex source data
+        self.client.reindex(body=reindex_body)

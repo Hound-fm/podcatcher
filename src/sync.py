@@ -1,23 +1,69 @@
 import numpy as np
 import pandas as pd
-from elastic import Elastic
 from lbry import lbry_proxy
 from utils import load_df_cache
 from logger import console
-from constants import ELASTIC_INDICES, ELASTIC_INDEX
+from constants import STREAM_TYPES, CHANNEL_TYPES
+from elastic import Elastic
+from elastic.definitions import (
+    INDEX,
+    INDICES,
+    FIELDS_STREAM_AUTOCOMPLETE,
+    FIELDS_CHANNEL_AUTOCOMPLETE,
+    MAPPINGS_STREAM_AUTOCOMPLETE,
+    MAPPINGS_CHANNEL_AUTOCOMPLETE,
+)
+
+
+def sync_autocomplete_indices():
+    elastic = Elastic()
+    for index in INDICES:
+        if index == INDEX["CHANNEL"]:
+            for channel_type in CHANNEL_TYPES:
+                source = {
+                    "index": index,
+                    "_source": FIELDS_CHANNEL_AUTOCOMPLETE,
+                    "query": {
+                        "constant_score": {
+                            "filter": {"term": {"channel_type": channel_type}},
+                        },
+                    },
+                }
+                elastic.generate_autocomple_index(
+                    channel_type,
+                    source,
+                    MAPPINGS_CHANNEL_AUTOCOMPLETE,
+                )
+        if index == INDEX["STREAM"]:
+            for stream_type in STREAM_TYPES:
+                source = {
+                    "index": index,
+                    "_source": FIELDS_STREAM_AUTOCOMPLETE,
+                    "query": {
+                        "constant_score": {
+                            "filter": {"term": {"stream_type": stream_type}}
+                        },
+                    },
+                }
+                elastic.generate_autocomple_index(
+                    stream_type,
+                    source,
+                    MAPPINGS_STREAM_AUTOCOMPLETE,
+                )
+
 
 # Sync cache data to elasticsearch
-def sync_elastic_search():
+def sync_cache_indices():
     elastic = Elastic()
-    for index in ELASTIC_INDICES:
-        df_cache = load_df_cache(f"df_{index}")
-        if not df_cache.empty:
-            chunk_type = "stream"
-            if (index == ELASTIC_INDEX["ARTISTS"]) or (
-                index == ELASTIC_INDEX["PODCAST_SERIES"]
-            ):
-                chunk_type = "channel"
-            elastic.append_df_chunk(index, df_cache, chunk_type)
+    for index in INDICES:
+        df_cache = load_df_cache(f"{index}_cache")
+        elastic.append_df_chunk(index, df_cache)
+
+
+def sync_elastic_search():
+    # Run elasticsearch "sync" tasks
+    sync_cache_indices()
+    sync_autocomplete_indices()
 
 
 # Load unavailable data of streams from sdk

@@ -52,7 +52,7 @@ def get_current_time():
 
 def load_df_cache(file_name):
     try:
-        data = pd.read_json(f"{config['CACHE_DIR']}/{file_name}.json")
+        data = pd.read_json(f"{config['CACHE_DIR']}/df_{file_name}.json")
         return data
     except:
         pass
@@ -83,7 +83,7 @@ def remove_cache():
 
 
 def save_df_cache(name, df):
-    df.to_json(f"{config['CACHE_DIR']}/{name}.json", orient="records")
+    df.to_json(f"{config['CACHE_DIR']}/df_{name}.json", orient="records")
 
 
 def save_json_cache(file_name, json_data):

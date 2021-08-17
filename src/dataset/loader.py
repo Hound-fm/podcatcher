@@ -27,7 +27,7 @@ class Dataset_chunk_loader:
 
     # Load streams dataframe
     def load_streams_data(self):
-        df_streams = load_df_cache("df_streams")
+        df_streams = load_df_cache("stream_seeds")
         # Not enough data to process dataset chunk
         if df_streams.empty:
             self.valid = False
@@ -40,7 +40,7 @@ class Dataset_chunk_loader:
 
     # Load channels dataframe
     def load_channels_data(self):
-        df_channels = load_df_cache("df_channels")
+        df_channels = load_df_cache("channel_seeds")
         # Not enough data to process dataset chunk
         if df_channels.empty:
             self.valid = False

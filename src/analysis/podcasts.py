@@ -1,5 +1,7 @@
 import pandas as pd
-from constants import STREAM_TYPE, CHANNEL_TYPE, ELASTIC_INDEX
+from elastic import Elastic
+from elastic.definitions import INDEX
+from constants import STREAM_TYPE, CHANNEL_TYPE
 from .cache import update_streams_cache, update_channels_cache
 
 
@@ -14,8 +16,6 @@ def process_podcasts(chunk):
     # Fix missing values
     df_podcasts.loc[df_podcasts.license.isnull(), "license"] = "All Rights Reserved"
     # Update podcast episodes cache
-    update_streams_cache(df_podcasts, ELASTIC_INDEX["PODCAST_EPISODES"])
+    update_streams_cache(df_podcasts, INDEX["STREAM"])
     # Update podcast series cache
-    update_channels_cache(
-        df_podcasts, chunk.df_channels, ELASTIC_INDEX["PODCAST_SERIES"]
-    )
+    update_channels_cache(df_podcasts, chunk.df_channels, INDEX["CHANNEL"])

@@ -20,7 +20,7 @@ def merge_updated_channels(df_list):
 def update_channels_cache(df_ref, df_channels, cache_id):
     df_updated_channels = get_updated_channels(df_ref, df_channels)
     df_merged = df_updated_channels.copy()
-    cache_name = f"df_{cache_id}"
+    cache_name = f"{cache_id}_cache"
     # Read from local cache
     try:
         # Load cached data
@@ -46,7 +46,7 @@ def merge_updated_streams(df_list):
 
 def update_streams_cache(df_updated_streams, cache_id):
     df_merged = df_updated_streams.copy()
-    cache_name = f"df_{cache_id}"
+    cache_name = f"{cache_id}_cache"
     # Read from local cache
     try:
         # Load cached data
