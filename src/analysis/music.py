@@ -1,9 +1,19 @@
+import json
 import pandas as pd
 from elastic import Elastic
 from elastic.definitions import INDEX
+from config import config
 from utils import save_df_cache, load_df_cache
 from constants import STREAM_TYPE, CHANNEL_TYPE
 from .cache import update_streams_cache, update_channels_cache
+
+# Load block list
+with open(config["SAFE_LIST"], "r") as f:
+    SAFE_LIST = json.load(f)
+
+
+def is_artist(df):
+    return df["channel_id"].isin(SAFE_LIST["ARTISTS"])
 
 
 def process_music(chunk):

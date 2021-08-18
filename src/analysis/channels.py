@@ -1,24 +1,11 @@
 import os
 import json
 import pandas as pd
-from config import config
 from constants import CHANNEL_TYPE
 from vocabulary import MULTILINGUAL
 from .tags import process_tags
-
-# Load block list
-with open(config["SAFE_LIST"], "r") as f:
-    SAFE_LIST = json.load(f)
-
-
-def is_artist(df):
-    return df["channel_id"].isin(SAFE_LIST["ARTISTS"])
-
-
-def is_podcast_series(df):
-    return df["channel_title"].str.contains(
-        "|".join(MULTILINGUAL["PODCAST"]), case=False
-    )
+from .music import is_artist
+from .podcasts import is_podcast_series
 
 
 def process_channels(df):
@@ -51,4 +38,5 @@ def process_channels(df):
             "|".join(MULTILINGUAL["MUSIC"]), case=False
         )
     ]
+
     return df_channels

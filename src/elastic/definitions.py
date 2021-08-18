@@ -8,12 +8,14 @@ INDICES: Final = set(INDEX.values())
 FIELDS_STREAM_AUTOCOMPLETE: Final = [
     "name",
     "title",
+    "genres",
     "duration",
     "thumbnail",
     "channel_title",
 ]
 
 FIELDS_CHANNEL_AUTOCOMPLETE: Final = [
+    "genres",
     "thumbnail",
     "channel_name",
     "channel_title",

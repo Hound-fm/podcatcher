@@ -1,8 +1,9 @@
 import time
 import pandas as pd
-from .tags import process_tags
 from constants import STREAM_TYPE
 from vocabulary import MULTILINGUAL
+from .tags import process_tags
+from .music import is_artist
 
 
 def process_streams(df):
@@ -14,13 +15,21 @@ def process_streams(df):
     # Merge tags data
     df_streams = df_streams.drop(columns="tags")
     df_streams = pd.merge(df_streams, df_tags, on="stream_id")
+
     # Classify untagged content:
-    # It is possible to detect podcast episodes by title.
+    # -- Classify as music based on trusted music channels:
+    df_streams.loc[
+        df_streams.stream_type.isnull() & is_artist(df_streams),
+        "stream_type",
+    ] = STREAM_TYPE["MUSIC"]
+
+    # -- It is possible to detect podcast episodes by title.
     df_streams.loc[
         df_streams.stream_type.isnull()
         & df_streams.title.str.contains("|".join(MULTILINGUAL["PODCAST"]), case=False),
         "stream_type",
     ] = STREAM_TYPE["PODCAST"]
+
     # Filter uknown types
     df_streams = df_streams.loc[df_streams["stream_type"].notnull()]
 

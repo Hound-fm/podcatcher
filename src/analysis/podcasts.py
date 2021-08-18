@@ -1,8 +1,15 @@
 import pandas as pd
 from elastic import Elastic
 from elastic.definitions import INDEX
+from vocabulary import MULTILINGUAL
 from constants import STREAM_TYPE, CHANNEL_TYPE
 from .cache import update_streams_cache, update_channels_cache
+
+
+def is_podcast_series(df):
+    return df["channel_title"].str.contains(
+        "|".join(MULTILINGUAL["PODCAST"]), case=False
+    )
 
 
 def process_podcasts(chunk):
