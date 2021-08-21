@@ -54,4 +54,5 @@ MAPPINGS_STREAM: Final = {
     "channel_name": "text",
     "channel_title": "text",
     "stream_type": "keyword",
+    "fee_amount": "float",
 }

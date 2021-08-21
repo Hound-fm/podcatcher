@@ -17,9 +17,9 @@ def process_channels(df):
 
     # Merge tags data
     df_channels = df_channels.drop(columns="tags")
-
     df_channels = pd.merge(df_channels, df_tags, on="channel_id")
 
+    # Fix untagged content
     df_channels.loc[is_artist(df_channels), "channel_type"] = CHANNEL_TYPE["MUSIC"]
     df_channels.loc[is_podcast_series(df_channels), "channel_type"] = CHANNEL_TYPE[
         "PODCAST"

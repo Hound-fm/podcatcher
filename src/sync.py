@@ -169,7 +169,7 @@ def sync_claims_metadata(streams_urls, channels_ids):
     trending = np.array([], dtype=np.float32)
     thumbnails = np.array([], dtype=np.str_)
     release_dates = np.array([], dtype=np.int32)
-    fee_amount = np.array([], dtype=np.int8)
+    fee_amount = np.array([], dtype=np.float64)
     fee_currency = np.array([], dtype=np.str_)
 
     # Sdk api request
@@ -283,6 +283,11 @@ def sync_claims_metadata(streams_urls, channels_ids):
     df_streams_metadata["thumbnail"] = thumbnails
     df_streams_metadata["fee_amount"] = fee_amount
     df_streams_metadata["fee_currency"] = fee_currency
+
+    # Fix data types:
+    df_streams_metadata["fee_amount"] = df_streams_metadata["fee_amount"].astype(
+        np.float64
+    )
     df_streams_metadata["release_date"] = pd.to_datetime(
         release_dates, utc=True, unit="s"
     )
