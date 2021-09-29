@@ -54,9 +54,7 @@ class Dataset_chunk_loader:
     # Initial preparation of streams dataframe
     def prepare_streams_data(self, df):
         df_streams = df.copy()
-        # Filter old content (not updated)
-        # filter_mask = df_streams['modified_at'] >= now_timestamp()
-        # df_streams = df_streams[filter_mask]
+
         # No updated streams on chunk
         if df_streams.empty:
             return df_streams

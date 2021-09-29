@@ -83,7 +83,12 @@ def remove_cache():
 
 
 def save_df_cache(name, df):
-    df.to_json(f"{config['CACHE_DIR']}/df_{name}.json", orient="records")
+    df.to_json(
+        f"{config['CACHE_DIR']}/df_{name}.json",
+        date_format="epoch",
+        date_unit="s",
+        orient="records",
+    )
 
 
 def save_json_cache(file_name, json_data):

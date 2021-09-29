@@ -78,12 +78,12 @@ def sync_channels_metadata(channels_ids, channels_metadata={}):
     # Normal python list
     tags = []
     languages = []
+    creation_dates = []
     # Numpy arrays
     ids = np.array([], dtype=np.str_)
     status = np.array([], dtype=np.str_)
     trending = np.array([], dtype=np.float32)
     thumbnails = np.array([], dtype=np.str_)
-    creation_dates = np.array([], dtype=np.int32)
 
     # Sdk api request
     for channel_id in channels_ids:
@@ -131,10 +131,10 @@ def sync_channels_metadata(channels_ids, channels_metadata={}):
             status = np.append(status, claim_status)
             trending = np.append(trending, claim_trending)
             thumbnails = np.append(thumbnails, thumbnail)
-            creation_dates = np.append(creation_dates, creation_date)
             # Use normal python list for nested lists
             tags.append(claim_tags)
             languages.append(claim_languages)
+            creation_dates.append(creation_date)
 
     # Append id
     df_results["channel_id"] = ids
@@ -144,7 +144,7 @@ def sync_channels_metadata(channels_ids, channels_metadata={}):
     df_results["trending"] = trending
     df_results["languages"] = languages
     df_results["thumbnail"] = thumbnails
-    df_results["creation_date"] = pd.to_datetime(creation_dates, utc=True, unit="s")
+    df_results["creation_date"] = creation_dates
 
     # Return new dataframe
     return df_results
@@ -161,6 +161,7 @@ def sync_claims_metadata(streams_urls, channels_ids):
     # Normal python list
     tags = []
     languages = []
+    release_dates = []
     # Numpy arrays
     ids = np.array([], dtype=np.str_)
     status = np.array([], dtype=np.str_)
@@ -168,7 +169,6 @@ def sync_claims_metadata(streams_urls, channels_ids):
     reposted = np.array([], dtype=np.int8)
     trending = np.array([], dtype=np.float32)
     thumbnails = np.array([], dtype=np.str_)
-    release_dates = np.array([], dtype=np.int32)
     fee_amount = np.array([], dtype=np.float64)
     fee_currency = np.array([], dtype=np.str_)
 
@@ -267,10 +267,10 @@ def sync_claims_metadata(streams_urls, channels_ids):
             thumbnails = np.append(thumbnails, thumbnail)
             fee_amount = np.append(fee_amount, claim_fee["amount"])
             fee_currency = np.append(fee_currency, claim_fee["currency"])
-            release_dates = np.append(release_dates, release_date)
             # Use normal python list for nested lists
             tags.append(claim_tags)
             languages.append(claim_languages)
+            release_dates.append(release_date)
 
     # Append stream metadata columns
     df_streams_metadata["stream_id"] = ids
@@ -283,13 +283,11 @@ def sync_claims_metadata(streams_urls, channels_ids):
     df_streams_metadata["thumbnail"] = thumbnails
     df_streams_metadata["fee_amount"] = fee_amount
     df_streams_metadata["fee_currency"] = fee_currency
+    df_streams_metadata["release_date"] = release_dates
 
     # Fix data types:
     df_streams_metadata["fee_amount"] = df_streams_metadata["fee_amount"].astype(
         np.float64
-    )
-    df_streams_metadata["release_date"] = pd.to_datetime(
-        release_dates, utc=True, unit="s"
     )
 
     # Append channels metadata columns
