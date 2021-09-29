@@ -26,7 +26,8 @@ def empty_assign_list(s):
 
 
 def unique_clean_list(x):
-    return [x for x in set(x) if pd.notna(x)]
+    series = x[~(x == "nan")].dropna().unique().tolist()
+    return series
 
 
 def safe_date(date_value):
