@@ -57,7 +57,8 @@ def sync_cache_indices():
     elastic = Elastic()
     for index in INDICES:
         df_cache = load_df_cache(f"{index}_cache")
-        elastic.append_df_chunk(index, df_cache)
+        if not df_cache.empty:
+            elastic.append_df_chunk(index, df_cache)
 
 
 def sync_elastic_search():

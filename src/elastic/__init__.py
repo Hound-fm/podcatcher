@@ -3,7 +3,13 @@ from logger import console
 from config import config
 from constants import STREAM_TYPES, CHANNEL_TYPES
 from elasticsearch import Elasticsearch
-from .definitions import INDEX, INDICES, MAPPINGS_STREAM, MAPPINGS_CHANNEL
+from .definitions import (
+    INDEX,
+    INDICES,
+    MAPPINGS_STREAM,
+    MAPPINGS_CHANNEL,
+    MAPPINGS_GENRE,
+)
 
 
 class Elastic:
@@ -38,19 +44,21 @@ class Elastic:
         except Exception as error:
             console.error("ELASTIC_SEARCH", error)
 
+    def destroy_index(self, index_name):
+        if self.client.indices.exists(index=index_name):
+            self.client.indices.delete(index=index_name)
+
     def destroy_cache_indices(self):
         # Destroy main indices
         for index in INDICES:
-            if self.client.indices.exists(index=index):
-                self.client.indices.delete(index=index)
+            self.destroy_index(index)
 
     def destroy_autocomplete_indices(self):
         try:
             # Append autocomplete prefix
             for index in {*STREAM_TYPES, *CHANNEL_TYPES}:
                 index = f"{index}_autocomplete"
-                if self.client.indices.exists(index=index):
-                    self.client.indices.delete(index=index)
+                self.destroy_index(index)
         except Exception as error:
             console.error("ELASTIC_SEARCH", error)
 
@@ -61,8 +69,9 @@ class Elastic:
             proxy = ed.DataFrame(self.client, es_index_pattern=index, columns=columns)
         else:
             proxy = ed.DataFrame(self.client, es_index_pattern=index)
-        pandas_df = ed.eland_to_pandas(proxy)
-        return pandas_df
+        if proxy:
+            pandas_df = ed.eland_to_pandas(proxy)
+            return pandas_df
 
     # Append chunk from dataFrame to elastic-search
     def append_df_chunk(self, index_name, df):
@@ -73,6 +82,9 @@ class Elastic:
 
         if index_name == INDEX["CHANNEL"]:
             mappings = MAPPINGS_CHANNEL
+
+        if index_name == INDEX["GENRE"]:
+            mappings = MAPPINGS_GENRE
 
         # Use pandas index for elasticsearch id
         df = df.set_index(f"{index_name}_id")

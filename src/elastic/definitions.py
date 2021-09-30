@@ -1,7 +1,7 @@
 from typing import Final
 
 # Static values
-INDEX: Final = {"STREAM": "stream", "CHANNEL": "channel"}
+INDEX: Final = {"STREAM": "stream", "CHANNEL": "channel", "GENRE": "genre"}
 INDICES: Final = set(INDEX.values())
 
 # Autocomplete fields
@@ -22,6 +22,10 @@ FIELDS_CHANNEL_AUTOCOMPLETE: Final = [
 ]
 
 # Mappings templates
+MAPPINGS_GENRE: Final = {
+    "label": "search_as_you_type",
+}
+
 MAPPINGS_STREAM_AUTOCOMPLETE: Final = {
     "genre": {"type": "search_as_you_type"},
     "title": {"type": "search_as_you_type"},

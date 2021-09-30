@@ -5,12 +5,19 @@ from elastic import Elastic
 from sync import sync_elastic_search, sync_autocomplete_indices
 from utils import remove_cache
 from analysis import scan
+from stats import fetch_stats
 from status import main_status
 
 # Main command
 @click.group()
 def cli():
     pass
+
+
+# Destroy autocomple indices and reindex new data
+@cli.command()
+def stats():
+    fetch_stats()
 
 
 # Initial sync
