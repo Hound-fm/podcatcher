@@ -1,4 +1,4 @@
-# WARNING: Low peformance and some litimations.
+["ODYSEE_API"]  # WARNING: Low peformance and some litimations.
 # TODO: Migrate to custom "Hub" and discard any external api usage.
 # https://github.com/lbryio/hub
 
@@ -19,7 +19,7 @@ MAX_TIMEOUT_RETRY = config["MAX_TIMEOUT_RETRY"]
 def api_get_request(url, url_params={}, payload={}):
     try:
         # Initial request test
-        res = httpx.get(config["LBRY_API"] + url, params=url_params)
+        res = httpx.get(config["ODYSEE_API"] + url, params=url_params)
         res.raise_for_status()
         # Parse to json and return results
         res = res.json()
@@ -82,7 +82,7 @@ def lbry_proxy(method, payload_data, retry=0):
 def api_post_request(url, payload={}):
     try:
         # Initial request test
-        res = httpx.post(config["LBRY_API"] + url, data=payload)
+        res = httpx.post(config["ODYSEE_API"] + url, data=payload)
         # Parse to json and return results
         return res.json()
     # Handle http request errors
@@ -98,11 +98,38 @@ def api_post_request(url, payload={}):
         )
 
 
-def get_view_counts(claim_ids):
+def get_view_count(claim_ids):
     try:
-        data = {"auth_token": config["LBRY_API_TOKEN"], "claim_id": ",".join(claim_ids)}
-        view_counts = api_post_request("file/view_count", data)
-        return view_counts["data"]
+        data = {
+            "auth_token": config["ODYSEE_API_TOKEN"],
+            "claim_id": ",".join(claim_ids),
+        }
+        view_count = api_post_request("file/view_count", data)
+
+        return view_count["data"]
+
+    except NameError:
+        console.error("LBRY_API", "Failed to retrive view counts")
+        return np.zeros(len(claim_ids))
+
+
+def get_likes_count(claim_ids):
+    try:
+        data = {
+            "auth_token": config["ODYSEE_API_TOKEN"],
+            "claim_ids": ",".join(claim_ids),
+        }
+        likes_count = []
+        reaction_count = api_post_request("reaction/list", data)
+
+        if reaction_count["success"]:
+            reactions = reaction_count["data"]["others_reactions"]
+            for reaction_id in claim_ids:
+                reaction_data = reactions[reaction_id]
+                likes_count.append(
+                    reaction_data["like"] + reaction_data["investor_like"]
+                )
+        return likes_count
 
     except NameError:
         console.error("LBRY_API", "Failed to retrive view counts")

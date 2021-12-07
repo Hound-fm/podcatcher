@@ -5,51 +5,7 @@ from utils import load_df_cache
 from logger import console
 from constants import STREAM_TYPES, CHANNEL_TYPES
 from elastic import Elastic
-from elastic.definitions import (
-    INDEX,
-    INDICES,
-    FIELDS_STREAM_AUTOCOMPLETE,
-    FIELDS_CHANNEL_AUTOCOMPLETE,
-    MAPPINGS_STREAM_AUTOCOMPLETE,
-    MAPPINGS_CHANNEL_AUTOCOMPLETE,
-)
-
-
-def sync_autocomplete_indices():
-    elastic = Elastic()
-    for index in INDICES:
-        if index == INDEX["CHANNEL"]:
-            for channel_type in CHANNEL_TYPES:
-                source = {
-                    "index": index,
-                    "_source": FIELDS_CHANNEL_AUTOCOMPLETE,
-                    "query": {
-                        "constant_score": {
-                            "filter": {"term": {"channel_type": channel_type}},
-                        },
-                    },
-                }
-                elastic.generate_autocomple_index(
-                    channel_type,
-                    source,
-                    MAPPINGS_CHANNEL_AUTOCOMPLETE,
-                )
-        if index == INDEX["STREAM"]:
-            for stream_type in STREAM_TYPES:
-                source = {
-                    "index": index,
-                    "_source": FIELDS_STREAM_AUTOCOMPLETE,
-                    "query": {
-                        "constant_score": {
-                            "filter": {"term": {"stream_type": stream_type}}
-                        },
-                    },
-                }
-                elastic.generate_autocomple_index(
-                    stream_type,
-                    source,
-                    MAPPINGS_STREAM_AUTOCOMPLETE,
-                )
+from elastic.definitions import INDEX, INDICES
 
 
 # Sync cache data to elasticsearch
@@ -64,7 +20,6 @@ def sync_cache_indices():
 def sync_elastic_search():
     # Run elasticsearch "sync" tasks
     sync_cache_indices()
-    sync_autocomplete_indices()
 
 
 # Load unavailable data of streams from sdk
@@ -83,7 +38,6 @@ def sync_channels_metadata(channels_ids, channels_metadata={}):
     # Numpy arrays
     ids = np.array([], dtype=np.str_)
     status = np.array([], dtype=np.str_)
-    trending = np.array([], dtype=np.float32)
     thumbnails = np.array([], dtype=np.str_)
 
     # Sdk api request
@@ -95,7 +49,6 @@ def sync_channels_metadata(channels_ids, channels_metadata={}):
             thumbnail = ""
             claim_tags = []
             claim_status = "spent"
-            claim_trending = 0
             claim_languages = []
             creation_date = 0
             # Get claim status
@@ -112,8 +65,6 @@ def sync_channels_metadata(channels_ids, channels_metadata={}):
             # Get claim stats
             if "meta" in metadata:
                 meta = metadata["meta"]
-                if "trending_mixed" in meta:
-                    claim_trending = meta["trending_mixed"]
                 if "creation_timestamp" in meta:
                     creation_date = meta["creation_timestamp"]
 
@@ -130,7 +81,6 @@ def sync_channels_metadata(channels_ids, channels_metadata={}):
             # Fill columns values
             ids = np.append(ids, channel_id)
             status = np.append(status, claim_status)
-            trending = np.append(trending, claim_trending)
             thumbnails = np.append(thumbnails, thumbnail)
             # Use normal python list for nested lists
             tags.append(claim_tags)
@@ -142,7 +92,6 @@ def sync_channels_metadata(channels_ids, channels_metadata={}):
     # Append columns
     df_results["tags"] = tags
     df_results["status"] = status
-    df_results["trending"] = trending
     df_results["languages"] = languages
     df_results["thumbnail"] = thumbnails
     df_results["creation_date"] = creation_dates
@@ -168,7 +117,6 @@ def sync_claims_metadata(streams_urls, channels_ids):
     status = np.array([], dtype=np.str_)
     licenses = np.array([], dtype=np.str_)
     reposted = np.array([], dtype=np.int8)
-    trending = np.array([], dtype=np.float32)
     thumbnails = np.array([], dtype=np.str_)
     fee_amount = np.array([], dtype=np.float64)
     fee_currency = np.array([], dtype=np.str_)
@@ -197,7 +145,6 @@ def sync_claims_metadata(streams_urls, channels_ids):
             claim_status = "spent"
             claim_license = ""
             claim_reposted = 0
-            claim_trending = 0
             claim_languages = []
             # Fee data
             claim_fee = {
@@ -229,8 +176,6 @@ def sync_claims_metadata(streams_urls, channels_ids):
                 meta = metadata["meta"]
                 if "reposted" in meta:
                     claim_reposted = meta["reposted"]
-                if "trending_mixed" in meta:
-                    claim_trending = meta["trending_mixed"]
                 # Used as fallback for "release_date"
                 if "creation_timestamp" in meta:
                     release_date = meta["creation_timestamp"]
@@ -264,7 +209,6 @@ def sync_claims_metadata(streams_urls, channels_ids):
             status = np.append(status, claim_status)
             licenses = np.append(licenses, claim_license)
             reposted = np.append(reposted, claim_reposted)
-            trending = np.append(trending, claim_trending)
             thumbnails = np.append(thumbnails, thumbnail)
             fee_amount = np.append(fee_amount, claim_fee["amount"])
             fee_currency = np.append(fee_currency, claim_fee["currency"])
@@ -279,7 +223,6 @@ def sync_claims_metadata(streams_urls, channels_ids):
     df_streams_metadata["status"] = status
     df_streams_metadata["license"] = licenses
     df_streams_metadata["reposted"] = reposted
-    df_streams_metadata["trending"] = trending
     df_streams_metadata["languages"] = languages
     df_streams_metadata["thumbnail"] = thumbnails
     df_streams_metadata["fee_amount"] = fee_amount
@@ -298,7 +241,7 @@ def sync_claims_metadata(streams_urls, channels_ids):
     return {"streams": df_streams_metadata, "channels": df_channels_metada}
 
 
-def sync_metadata(df_ref_streams, df_ref_channels, max_chunk_size=100):
+def sync_metadata(df_ref_streams, df_ref_channels, max_chunk_size=50):
     # Dataframes
     df_streams_metadata = pd.DataFrame()
     df_channels_metadata = pd.DataFrame()

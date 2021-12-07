@@ -7,6 +7,7 @@ from config import config
 from lbry import filtered_outpoints
 from utils import load_df_cache, get_outpoints, now_timestamp
 from vocabulary import MULTILINGUAL
+from status import main_status
 
 # Load block list
 with open(config["BLOCK_LIST"], "r") as f:
@@ -66,6 +67,12 @@ class Dataset_chunk_loader:
         # Filter blocked content
         if filtered_outpoints and len(filtered_outpoints) > 0:
             filter_mask = ~df_streams.outpoint.isin(filtered_outpoints)
+            df_streams = df_streams.loc[filter_mask]
+
+        # Filter by update date
+        current = main_status.status
+        if current["init_sync"] and current["updated"]:
+            filter_mask = df_streams.modified_at >= current["updated"]
             df_streams = df_streams.loc[filter_mask]
 
         # Remove irrelevant columns

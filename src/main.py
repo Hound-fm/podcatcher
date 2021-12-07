@@ -2,7 +2,7 @@
 import click
 import asyncio
 from elastic import Elastic
-from sync import sync_elastic_search, sync_autocomplete_indices
+from sync import sync_elastic_search
 from utils import remove_cache
 from analysis import scan
 from stats import fetch_stats
@@ -14,7 +14,6 @@ def cli():
     pass
 
 
-# Destroy autocomple indices and reindex new data
 @cli.command()
 def stats():
     fetch_stats()
@@ -49,10 +48,3 @@ def clear_cache():
 def drop():
     remove_cache()
     Elastic().destroy_data()
-
-
-# Destroy autocomple indices and reindex new data
-@cli.command()
-def regenerate_autocomplete():
-    Elastic().destroy_autocomplete_indices()
-    sync_autocomplete_indices()

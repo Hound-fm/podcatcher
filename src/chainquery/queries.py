@@ -89,23 +89,22 @@ def bulk_fetch_streams():
         claim.modified_at,
     )
 
+    # Chainquery public api doesn't support this query anymore: Timeout error
     # Full sync completed. Search for recent streams.
-    current = main_status.status
-    if current["init_sync"] and current["updated"]:
-        q = q.where(
-            filter_by_content_type()
-            & filter_by_audio_duration()
-            & filter_invalid_streams()
-            & claim.modified_at
-            > current["updated"]
-        )
-    else:
-        # Initial sync. Search for all streams
-        q = q.where(
-            filter_by_content_type()
-            & filter_by_audio_duration()
-            & filter_invalid_streams()
-        )
+    # current = main_status.status
+    # if current["init_sync"] and current["updated"]:
+    # q = q.where(
+    # filter_by_content_type()
+    # & filter_by_audio_duration()
+    # & filter_invalid_streams()
+    # & (claim.modified_at >= current["updated"])
+    # )
+
+    # Search for all streams
+    q = q.where(
+        filter_by_content_type() & filter_by_audio_duration() & filter_invalid_streams()
+    )
+
     # returns new query
     return q
 

@@ -1,7 +1,7 @@
 import time
 import atexit
 import pandas as pd
-from utils import now_timestamp, get_streams_urls
+from utils import now_timestamp, get_streams_urls, get_channels_urls
 from sync import sync_elastic_search, sync_metadata
 from config import config
 from logger import console
@@ -106,6 +106,7 @@ def process_dataset_chunk():
         return True
     # Get urls
     chunk.df_streams["url"] = get_streams_urls(chunk.df_streams)
+    chunk.df_channels["channel_url"] = get_channels_urls(chunk.df_channels)
     # Get updated metadata from sdk
     metadata = sync_metadata(chunk.df_streams, chunk.df_channels)
 
@@ -143,7 +144,13 @@ def process_dataset_chunk():
     chunk.df_streams = pd.merge(
         chunk.df_streams,
         chunk.df_channels[
-            ["channel_id", "channel_name", "channel_title", "channel_type"]
+            [
+                "channel_id",
+                "channel_name",
+                "channel_title",
+                "channel_type",
+                "channel_url",
+            ]
         ],
         on="channel_id",
     )

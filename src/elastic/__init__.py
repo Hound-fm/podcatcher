@@ -3,6 +3,8 @@ from logger import console
 from config import config
 from constants import STREAM_TYPES, CHANNEL_TYPES
 from elasticsearch import Elasticsearch
+from analytics import fetch_stream_analytics
+
 from .definitions import (
     INDEX,
     INDICES,
@@ -40,7 +42,6 @@ class Elastic:
         try:
             # Destroy all autocomplete indices
             self.destroy_cache_indices()
-            self.destroy_autocomplete_indices()
         except Exception as error:
             console.error("ELASTIC_SEARCH", error)
 
@@ -53,17 +54,11 @@ class Elastic:
         for index in INDICES:
             self.destroy_index(index)
 
-    def destroy_autocomplete_indices(self):
-        try:
-            # Append autocomplete prefix
-            for index in {*STREAM_TYPES, *CHANNEL_TYPES}:
-                index = f"{index}_autocomplete"
-                self.destroy_index(index)
-        except Exception as error:
-            console.error("ELASTIC_SEARCH", error)
+    def get_index(self, index_name):
+        return ed.DataFrame(self.client, es_index_pattern=index_name)
 
     # Get data frame from index
-    def get_df(self, index, columns=[]):
+    def get_df(self, index, columns):
         proxy = None
         if columns:
             proxy = ed.DataFrame(self.client, es_index_pattern=index, columns=columns)
@@ -72,6 +67,27 @@ class Elastic:
         if proxy:
             pandas_df = ed.eland_to_pandas(proxy)
             return pandas_df
+
+    def append_df(self, index_name, df):
+        mappings = None
+        # Select mappings
+        if index_name == INDEX["STREAM"]:
+            mappings = MAPPINGS_STREAM
+
+        if index_name == INDEX["CHANNEL"]:
+            mappings = MAPPINGS_CHANNEL
+
+        if index_name == INDEX["GENRE"]:
+            mappings = MAPPINGS_GENRE
+
+        ed.pandas_to_eland(
+            df,
+            es_client=self.client,
+            es_refresh=True,
+            es_if_exists="append",
+            es_dest_index=index_name,
+            es_type_overrides=mappings,
+        )
 
     # Append chunk from dataFrame to elastic-search
     def append_df_chunk(self, index_name, df):
@@ -88,6 +104,10 @@ class Elastic:
 
         # Use pandas index for elasticsearch id
         df = df.set_index(f"{index_name}_id")
+
+        # Fetch analytics data of streams
+        if index_name == "stream":
+            df = fetch_stream_analytics(df)
 
         ed.pandas_to_eland(
             df,

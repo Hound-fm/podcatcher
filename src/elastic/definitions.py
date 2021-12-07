@@ -4,59 +4,34 @@ from typing import Final
 INDEX: Final = {"STREAM": "stream", "CHANNEL": "channel", "GENRE": "genre"}
 INDICES: Final = set(INDEX.values())
 
-# Autocomplete fields
-FIELDS_STREAM_AUTOCOMPLETE: Final = [
-    "name",
-    "title",
-    "genres",
-    "duration",
-    "thumbnail",
-    "channel_title",
-]
-
-FIELDS_CHANNEL_AUTOCOMPLETE: Final = [
-    "genres",
-    "thumbnail",
-    "channel_name",
-    "channel_title",
-]
-
 # Mappings templates
 MAPPINGS_GENRE: Final = {
     "label": "search_as_you_type",
 }
 
-MAPPINGS_STREAM_AUTOCOMPLETE: Final = {
-    "genre": {"type": "search_as_you_type"},
-    "title": {"type": "search_as_you_type"},
-}
-
-MAPPINGS_CHANNEL_AUTOCOMPLETE: Final = {
-    "genre": {"type": "search_as_you_type"},
-    "channel_title": {"type": "search_as_you_type"},
-}
-
 # Pandas to eland
 MAPPINGS_CHANNEL: Final = {
-    "trending": "float",
+    "tags": "keyword",
+    "genres": "keyword",
     "thumbnail": "text",
     "channel_name": "text",
-    "channel_title": "text",
+    "channel_title": "search_as_you_type",
     "channel_type": "keyword",
 }
 
 MAPPINGS_STREAM: Final = {
-    "title": "text",
+    "title": "search_as_you_type",
     "name": "text",
     "tags": "keyword",
     "genres": "keyword",
-    "trending": "float",
     "thumbnail": "text",
     "reposted": "integer",
     "license": "text",
     "channel_id": "text",
     "channel_name": "text",
-    "channel_title": "text",
+    "channel_title": "search_as_you_type",
     "stream_type": "keyword",
     "fee_amount": "float",
+    "view_count": "integer",
+    "likes_count": "integer",
 }
