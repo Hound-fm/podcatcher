@@ -30,8 +30,6 @@ default_query_options = {
 
 # Function to run a query and retrive data from the chainquery public api
 def query(q, options=default_query_options, retry=0):
-    # Query response
-    res = None
     try:
         # Apply options
         q = q.limit(options["limit"])
@@ -41,11 +39,11 @@ def query(q, options=default_query_options, retry=0):
         # Send the sql query as url parameter
         payload = {"query": queryString}
         # Initial request
-        res = httpx.get(config["CHAINQUERY_API"], params=payload)
+        res = httpx.get(config["CHAINQUERY_API"], params=payload, timeout=20.0)
         res.raise_for_status()
         # Parse response data to json
         res = res.json()
-        data = res["data"]
+        data = res.get("data")
         # Retrive response data
         return data
 

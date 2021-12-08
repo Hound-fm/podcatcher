@@ -155,6 +155,9 @@ def process_dataset_chunk():
         on="channel_id",
     )
 
+    # Simplify column names
+    chunk.df_channels.rename(columns={"channel_url": "url"}, inplace=True)
+
     # No relevant data found. Skip further analysis.
     if chunk.df_streams.empty:
         return True

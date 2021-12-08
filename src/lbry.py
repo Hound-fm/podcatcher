@@ -19,7 +19,7 @@ MAX_TIMEOUT_RETRY = config["MAX_TIMEOUT_RETRY"]
 def api_get_request(url, url_params={}, payload={}):
     try:
         # Initial request test
-        res = httpx.get(config["ODYSEE_API"] + url, params=url_params)
+        res = httpx.get(config["ODYSEE_API"] + url, params=url_params, timeout=20.0)
         res.raise_for_status()
         # Parse to json and return results
         res = res.json()
@@ -48,7 +48,9 @@ def lbry_proxy(method, payload_data, retry=0):
     }
     # Initial request test
     try:
-        res = httpx.post(config["LBRY_SDK_API"], headers=headers, json=payload).json()
+        res = httpx.post(
+            config["LBRY_SDK_API"], headers=headers, json=payload, timeout=20.0
+        ).json()
     # Handle http request errors
     except httpx.HTTPStatusError as exc:
         console.error(
@@ -82,7 +84,7 @@ def lbry_proxy(method, payload_data, retry=0):
 def api_post_request(url, payload={}):
     try:
         # Initial request test
-        res = httpx.post(config["ODYSEE_API"] + url, data=payload)
+        res = httpx.post(config["ODYSEE_API"] + url, data=payload, timeout=20.0)
         # Parse to json and return results
         return res.json()
     # Handle http request errors
@@ -106,7 +108,10 @@ def get_view_count(claim_ids):
         }
         view_count = api_post_request("file/view_count", data)
 
-        return view_count["data"]
+        if view_count["success"] and len(view_count["data"]) > 0:
+            return view_count["data"]
+        else:
+            return np.zeros(len(claim_ids))
 
     except NameError:
         console.error("LBRY_API", "Failed to retrive view counts")

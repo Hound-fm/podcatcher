@@ -118,20 +118,7 @@ class Elastic:
             es_type_overrides=mappings,
         )
 
-    def generate_autocomple_index(self, index, source, template_mappings):
-        # Append autocomplete prefix
-        dest_index = f"{index}_autocomplete"
-
-        reindex_body = {
-            "dest": {"index": dest_index},
-            "source": source,
-        }
-
-        autocomplete_body = {"mappings": {"properties": template_mappings}}
-
-        # Create empty index if doesn't exists
-        if not self.client.indices.exists(index=dest_index):
-            self.client.indices.create(index=dest_index, body=autocomplete_body)
-
-        # Reindex source data
-        self.client.reindex(body=reindex_body)
+    def clean_migration(self):
+        # Destroy main indices
+        for index in ["streams_index", "channels_index"]:
+            self.destroy_index(index)
