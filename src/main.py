@@ -7,6 +7,7 @@ from utils import remove_cache
 from analysis import scan
 from stats import fetch_stats
 from status import main_status
+from vocabulary import update_music_genres
 
 # Main command
 @click.group()
@@ -48,3 +49,9 @@ def clear_cache():
 def drop():
     remove_cache()
     Elastic().destroy_data()
+
+
+# Drop all data
+@cli.command()
+def update():
+    update_music_genres()
