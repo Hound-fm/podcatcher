@@ -21,8 +21,8 @@ def unique_array(x):
     return list(dict.fromkeys(x))
 
 
-def empty_assign_list(s):
-    return [[[]] * s.sum()]
+def assign_empty_list(x):
+    return np.empty((len(x), 0)).tolist()
 
 
 def unique_clean_list(x):

@@ -13,16 +13,16 @@ def is_podcast_series(df):
 
 
 def process_podcasts(chunk):
-    df_podcasts = chunk.df_streams[
+    df_episodes = chunk.df_streams[
         (chunk.df_streams.stream_type == STREAM_TYPE["PODCAST"])
         & (chunk.df_streams.channel_type == CHANNEL_TYPE["PODCAST"])
     ].copy()
     # No podcast episodes on dataset chunk
-    if df_podcasts.empty:
+    if df_episodes.empty:
         return
     # Fix missing values
-    df_podcasts.loc[df_podcasts.license.isnull(), "license"] = "All Rights Reserved"
+    df_episodes.loc[df_episodes.license.isnull(), "license"] = "All Rights Reserved"
     # Update podcast episodes cache
-    update_streams_cache(df_podcasts, INDEX["STREAM"])
+    update_streams_cache(df_episodes, INDEX["STREAM"])
     # Update podcast series cache
-    update_channels_cache(df_podcasts, chunk.df_channels, INDEX["CHANNEL"])
+    update_channels_cache(df_episodes, chunk.df_channels, INDEX["CHANNEL"])

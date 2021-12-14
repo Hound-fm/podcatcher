@@ -4,6 +4,8 @@ from config import config
 from constants import STREAM_TYPES, CHANNEL_TYPES
 from elasticsearch import Elasticsearch
 from analytics import fetch_stream_analytics
+from utils import assign_empty_list
+
 
 from .definitions import (
     INDEX,
@@ -28,6 +30,11 @@ class Elastic:
                     http_auth=(config["ELASTIC_USER"], config["ELASTIC_PASSWORD"]),
                     http_compress=True,
                 )
+
+    def update_index_mapping(self, index_name, data):
+        if self.client.indices.exists(index=index_name):
+            updated_mapping = {"properties": data}
+            self.client.indices.put_mapping(body=updated_mapping, index=index_name)
 
     # Generate data structure:
     def build_data_schema(self):
@@ -108,6 +115,15 @@ class Elastic:
         # Fetch analytics data of streams
         if index_name == "stream":
             df = fetch_stream_analytics(df)
+
+        # Keep old values (unoptimized)
+        # TODO: Find a better way to keep old values
+        if index_name == "channel":
+            df_prev = self.get_df("channel", ["content_genres"])
+            # Initialize empty list
+            df["content_genres"] = assign_empty_list(df)
+            # Prevent overwrite
+            df["content_genres"].update(df_prev["content_genres"])
 
         ed.pandas_to_eland(
             df,

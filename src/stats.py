@@ -3,10 +3,43 @@ import numpy as np
 import pandas as pd
 import eland as ed
 from elastic import Elastic
-from utils import save_json_cache
+from utils import save_json_cache, unique_clean_list, assign_empty_list
 from constants import STREAM_TYPES
 from analysis.cache import update_streams_cache
 from analytics import fetch_stream_analytics
+
+
+def get_channel_genres(df_streams):
+    df_genres = df_streams.explode("genres").dropna(axis="index")
+    df_genres = df_genres.rename(columns={"genres": "label"})
+    df_channel_genres = (
+        df_genres[["channel_id", "label"]]
+        .groupby(["channel_id", "label"], sort=False)
+        .agg(frequency=("label", "count"))
+        .reset_index()
+    )
+    df_channel_genres = df_channel_genres.sort_values(by=["frequency"], ascending=False)
+    df_channel_genres = (
+        df_channel_genres.groupby(["channel_id"])
+        .agg(stream_genres=("label", unique_clean_list))
+        .reset_index()
+    )
+
+    df_channel_genres = df_channel_genres.set_index("channel_id")
+
+    return df_channel_genres
+
+
+def update_channel_content_genres():
+    el = Elastic()
+    el.update_index_mapping("channel", {"content_genres": {"type": "keyword"}})
+    df_streams = el.get_df("stream", ["channel_id", "genres"])
+    df_channels = el.get_df("channel", None)
+    genres = get_channel_genres(df_streams)
+    # Initialize empty list
+    df_channels["content_genres"] = assign_empty_list(df_channels)
+    df_channels["content_genres"].update(genres["stream_genres"])
+    el.append_df("channel", df_channels)
 
 
 def get_usage_df(df, column):
@@ -43,3 +76,4 @@ def fetch_stats():
         # Update genre index
         update_stream_genres(stream_type)
     update_stream_analytics()
+    update_channel_content_genres()
