@@ -42,4 +42,4 @@ def fetch_stats():
     for stream_type in STREAM_TYPES:
         # Update genre index
         update_stream_genres(stream_type)
-        update_stream_analytics()
+    update_stream_analytics()
