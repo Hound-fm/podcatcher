@@ -26,11 +26,23 @@ def process_channels(df):
     ]
 
     # Filter uknown types
+    # Note: All channels should have a valid type ( artist or podcast_series )
     df_channels = df_channels.loc[
         df_channels["channel_type"].notnull() & df_channels["channel_title"].notnull()
     ]
 
-    # Filter suspicious channels (keep safe list)
+    # Filter no thumbnails
+    # Note: All channels should have a thumbnail
+    # Note: Only channels on safe list will ignore this filter.
+    # Todo: For creators with blindness or vision impairment is probably not a good idea to enforce this.
+    df_channels = df_channels.loc[
+        is_artist(df_channels) | df_channels["thumbnail"].str.strip().astype(bool)
+    ]
+
+    # Filter channel keywords
+    # Filter suspicious channels ( "Free music", "All music", etc.. )
+    # Note: Only channels on safe list will ignore this filter.
+    # Todo: Add more keywords.
     keep_safe_list = is_artist(df_channels) | is_podcast_series(df_channels)
     df_channels = df_channels.loc[
         keep_safe_list

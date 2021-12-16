@@ -52,6 +52,7 @@ def process_tags(df, claim_type="stream"):
     df_tags["tag_name"] = df_tags["tag_name"].str.lower()
     df_tags["tag_name"] = df_tags["tag_name"].str.strip()
     df_tags["tag_name"] = df_tags["tag_name"].str.replace("-and-", " and ")
+    df_tags["tag_name"] = df_tags["tag_name"].str.replace("-music", "")
     # Filter tags
     df_tags = df_tags.loc[~df_tags["tag_name"].isin(FILTER_TAGS)]
     return process_special_tags(df_tags, claim_type)
@@ -67,6 +68,16 @@ def process_special_tags(df, claim_type="stream"):
 
     df_tags = df.copy()
     # Find multilingual or alias version and correct tag_names:
+    for genre in GENRES["MUSIC_ALIAS"].keys():
+        df_tags.loc[
+            df_tags["tag_name"].isin(GENRES["MUSIC_ALIAS"][genre]), "tag_name"
+        ] = genre
+
+    for genre in GENRES["PODCAST_ALIAS"].keys():
+        df_tags.loc[
+            df_tags["tag_name"].isin(GENRES["PODCAST_ALIAS"][genre]), "tag_name"
+        ] = genre
+
     df_tags.loc[
         df_tags["tag_name"].str.contains("|".join(MULTILINGUAL["MUSIC"]), case=False),
         "tag_name",

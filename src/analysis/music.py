@@ -17,12 +17,23 @@ def is_artist(df):
 
 
 def process_music(chunk):
+
     df_tracks = chunk.df_streams[
         (chunk.df_streams.stream_type == STREAM_TYPE["MUSIC"])
         & (chunk.df_streams.channel_type == CHANNEL_TYPE["MUSIC"])
-        & chunk.df_streams.license.notnull()
-        & ~chunk.df_streams.license.isin(["None", "none", ""])
     ].copy()
+
+    missing_license = ~df_tracks.license.notnull() | df_tracks.license.isin(
+        ["None", "none", ""]
+    )
+    # Auto fill missing unlicensed for truested artists:
+    df_tracks.loc[
+        missing_license & is_artist(df_tracks), "license"
+    ] = "All rights reserved."
+    # Filter unlicensed content
+    df_tracks = df_tracks[
+        df_tracks.license.notnull() & ~df_tracks.license.isin(["None", "none", ""])
+    ]
     # No songs on dataset chunk
     if df_tracks.empty:
         return

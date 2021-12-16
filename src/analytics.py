@@ -19,11 +19,14 @@ def fetch_stream_analytics(df):
     # Chunk data
     chunks = [stream_ids]
     chunk_index = 0
-    max_chunk_size = 50
+    max_chunk_size = 90
 
     # Split stream data on chunks
-    if streams_count >= max_chunk_size:
-        chunks = np.array_split(stream_ids, int(streams_count / max_chunk_size))
+    if streams_count > max_chunk_size:
+        sections = int(streams_count / max_chunk_size)
+        print(sections)
+        if sections > 1:
+            chunks = np.array_split(stream_ids, sections)
 
     for chunk in chunks:
         # logger

@@ -241,7 +241,7 @@ def sync_claims_metadata(streams_urls, channels_ids):
     return {"streams": df_streams_metadata, "channels": df_channels_metada}
 
 
-def sync_metadata(df_ref_streams, df_ref_channels, max_chunk_size=50):
+def sync_metadata(df_ref_streams, df_ref_channels, max_chunk_size=90):
     # Dataframes
     df_streams_metadata = pd.DataFrame()
     df_channels_metadata = pd.DataFrame()
@@ -257,7 +257,7 @@ def sync_metadata(df_ref_streams, df_ref_channels, max_chunk_size=50):
 
     total_urls = len(streams_urls)
 
-    if total_urls >= max_chunk_size:
+    if total_urls > max_chunk_size:
         chunks = np.array_split(streams_urls, int(total_urls / max_chunk_size))
 
     for chunk in chunks:

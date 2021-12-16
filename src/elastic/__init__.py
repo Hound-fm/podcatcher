@@ -5,8 +5,7 @@ from constants import STREAM_TYPES, CHANNEL_TYPES
 from elasticsearch import Elasticsearch
 from analytics import fetch_stream_analytics
 from utils import assign_empty_list
-
-
+from status import main_status
 from .definitions import (
     INDEX,
     INDICES,
@@ -119,11 +118,12 @@ class Elastic:
         # Keep old values (unoptimized)
         # TODO: Find a better way to keep old values
         if index_name == "channel":
-            df_prev = self.get_df("channel", ["content_genres"])
             # Initialize empty list
             df["content_genres"] = assign_empty_list(df)
-            # Prevent overwrite
-            df["content_genres"].update(df_prev["content_genres"])
+            # Prevent overwrite if this is the initial sync:
+            if main_status.status["init_sync"]:
+                df_prev = self.get_df("channel", ["content_genres"])
+                df["content_genres"].update(df_prev["content_genres"])
 
         ed.pandas_to_eland(
             df,

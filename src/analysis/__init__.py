@@ -100,6 +100,7 @@ def process_dataset_chunk():
     chunk = Dataset_chunk_loader()
     # Not enough data to process chunk
     if not chunk.valid:
+        print("loader failed?")
         return False
     # No relevant data found. Skip further analysis.
     if chunk.valid == "empty":
@@ -117,6 +118,7 @@ def process_dataset_chunk():
         or metadata["streams"].empty
         or metadata["channels"].empty
     ):
+        print("sdk failed?")
         return False
 
     console.info(
