@@ -7,14 +7,6 @@ from os import path, listdir, remove as removeFile
 from config import config
 from itertools import islice
 from datetime import datetime
-from pygments import highlight
-from pygments.lexers import JsonLexer
-from pygments.formatters import TerminalFormatter
-
-
-def print_json(data):
-    json_str = json.dumps(data, indent=4, sort_keys=True)
-    print(highlight(json_str, JsonLexer(), TerminalFormatter()))
 
 
 def unique_array(x):
