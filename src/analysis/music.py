@@ -34,7 +34,7 @@ def format_track_title(df_streams):
     df_tracks.title = df_tracks.title.str.strip()
     title_split = df_tracks.title.str.lower().str.split(pat=" - ", n=3).str
     title_raw_split = df_tracks.title.str.split(pat=" - ", n=3).str
-    artist_title = df_tracks.channel_title.str.strip().str.lower()
+    artist_title = df_tracks.channel_title.str.lower()
     # Remove channel name from stream title: "Mozart - Epic orchesta" -> "Epic orchesta"
     df_tracks.loc[
         (title_split.len() >= 2) & (title_split[0] == artist_title),
