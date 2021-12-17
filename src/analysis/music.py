@@ -37,6 +37,48 @@ def process_music(chunk):
     # No songs on dataset chunk
     if df_tracks.empty:
         return
+    # Format channel title:
+    chunk.df_channels.channel_title = chunk.df_channels.channel_title.str.strip()
+    # Simplify artist name: "Ludwig van Beethoven music" -> "Ludwig van Beethoven"
+    # Note: Adding "music" to the title is irrelevant and will be blocked by the filters.
+    chunk.df_channels.channel_title = chunk.df_channels.channel_title.str.replace(
+        " music", ""
+    )
+    chunk.df_channels.channel_title = chunk.df_channels.channel_title.str.replace(
+        " Music", ""
+    )
+    # Simplify artist name: "Mozart's Music" -> "Mozart"
+    chunk.df_channels.channel_title = chunk.df_channels.channel_title.str.replace(
+        "'s music", ""
+    )
+    chunk.df_channels.channel_title = chunk.df_channels.channel_title.str.replace(
+        "'s Music", ""
+    )
+    # Format stream title:
+    df_tracks.title = df_tracks.title.str.strip()
+
+    title_split = df_tracks.title.str.lower()
+    title_split = df_tracks.title.str.split(pat=" - ", n=3).str
+    title_raw_split = df_tracks.title.str.split(pat=" - ", n=3).str
+    # Remove channel name from stream title: "Mozart - Epic orchesta" -> "Epic orchesta"
+    df_tracks.loc[
+        (title_split.len() == 2)
+        & (
+            (title_split[0] == df_tracks.channel_title)
+            | (title_split[0] == "original music")
+        ),
+        "title",
+    ] = title_raw_split[1]
+    # Remove channel name from stream title: "Epic orchesta - Mozart" -> "Epic orchesta"
+    df_tracks.loc[
+        (title_split.len() == 2)
+        & (
+            (title_split[1] == df_tracks.channel_title)
+            | (title_split[1] == "original music")
+        ),
+        "title",
+    ] = title_raw_split[0]
+
     # Update songs
     update_streams_cache(df_tracks, INDEX["STREAM"])
     # Update artists
