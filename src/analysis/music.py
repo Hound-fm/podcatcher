@@ -19,13 +19,13 @@ def is_artist(df):
 def format_artist_title(channel_title):
     # Format channel title:
     artist_title = channel_title.str.strip()
-    # Simplify artist name: "Ludwig van Beethoven music" -> "Ludwig van Beethoven"
     # Note: Adding "music" to the title is irrelevant and will be blocked by the filters.
-    artist_title = artist_title.str.replace(" music", "")
-    artist_title = artist_title.str.replace(" Music", "")
     # Simplify artist name: "Mozart's Music" -> "Mozart"
     artist_title = artist_title.str.replace("'s music", "")
     artist_title = artist_title.str.replace("'s Music", "")
+    # Simplify artist name: "Ludwig van Beethoven music" -> "Ludwig van Beethoven"
+    artist_title = artist_title.str.replace(" music", "")
+    artist_title = artist_title.str.replace(" Music", "")
     return artist_title
 
 
