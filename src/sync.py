@@ -3,6 +3,8 @@ import pandas as pd
 from lbry import lbry_proxy
 from utils import load_df_cache
 from logger import console
+import collections
+from collection import COLLECTIONS
 from constants import STREAM_TYPES, CHANNEL_TYPES
 from elastic import Elastic
 from elastic.definitions import INDEX, INDICES
@@ -20,6 +22,85 @@ def sync_cache_indices():
 def sync_elastic_search():
     # Run elasticsearch "sync" tasks
     sync_cache_indices()
+
+
+def get_collection_title(collection_key):
+    return collection_key.replace("-", " ").title()
+
+
+def update_collection(collection_id, collection_list):
+    res = lbry_proxy(
+        "collection_update",
+        {
+            "claim_id": collection_id,
+            "claims": collection_list,
+            "clear_claims": True,
+            "channel_id": "2a1a0936017f6677628aff2b90c6675569d0d07c",
+        },
+    )
+    if res:
+        if "error" in res:
+            if "message" in res["error"]:
+                console.error("LBRY_SDK", f"{res['error']['message']}")
+        if "result" in res:
+            console.info("LBRY_SDK", f"Collection updated: {collection_key}")
+
+
+def create_collection(collection_key, collection_list, collection_description):
+    res = lbry_proxy(
+        "collection_create",
+        {
+            "bid": "0.001",
+            "name": collection_key,
+            "title": get_collection_title(collection_key),
+            "claims": collection_list,
+            "channel_id": "2a1a0936017f6677628aff2b90c6675569d0d07c",
+            "description": collection_description,
+        },
+    )
+    if res:
+        if "error" in res:
+            if "message" in res["error"]:
+                console.error("LBRY_SDK", f"{res['error']['message']}")
+        if "result" in res:
+            console.info("LBRY_SDK", f"Collection created: {collection_key}")
+
+
+def sync_collections_metadata():
+    # Sdk api request
+    res = lbry_proxy("collection_list", {})
+    if res:
+        if "error" in res:
+            if "message" in res["error"]:
+                console.error("LBRY_SDK", f"{res['error']['message']}")
+        if "result" in res and "items" in res["result"]:
+            current_collections = res["result"]["items"]
+
+            for collection_key in COLLECTIONS:
+                exists = False
+                # Check if collection exists:
+                for collection in current_collections:
+                    if collection["normalized_name"] == collection_key:
+                        exists = True
+                        # Check if collection needs update
+                        if collections.Counter(
+                            collection["value"]["claims"]
+                        ) != collections.Counter(COLLECTIONS[collection_key]["claims"]):
+                            update_collection(
+                                collection["claim_id"],
+                                COLLECTIONS[collection_key]["claims"],
+                            )
+                            break
+                if not exists:
+                    # Create collection
+                    create_collection(
+                        collection_key,
+                        COLLECTIONS[collection_key]["claims"],
+                        COLLECTIONS[collection_key]["description"],
+                    )
+
+    else:
+        console.error("LBRY_SDK", f"Uknown error")
 
 
 # Load unavailable data of streams from sdk

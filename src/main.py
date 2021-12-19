@@ -2,7 +2,7 @@
 import click
 import asyncio
 from elastic import Elastic
-from sync import sync_elastic_search
+from sync import sync_elastic_search, sync_collections_metadata
 from utils import remove_cache
 from analysis import scan
 from stats import fetch_stats
@@ -55,3 +55,9 @@ def drop():
 @cli.command()
 def update():
     update_music_genres()
+
+
+# Drop all data
+@cli.command()
+def collections():
+    sync_collections_metadata()
