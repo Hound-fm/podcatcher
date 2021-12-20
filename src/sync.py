@@ -43,7 +43,7 @@ def update_collection(collection_id, collection_list):
             if "message" in res["error"]:
                 console.error("LBRY_SDK", f"{res['error']['message']}")
         if "result" in res:
-            console.info("LBRY_SDK", f"Collection updated: {collection_key}")
+            console.info("LBRY_SDK", f"Collection updated: {collection_id}")
 
 
 def create_collection(collection_key, collection_list, collection_description):
