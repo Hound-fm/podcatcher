@@ -1,11 +1,6 @@
-import time
-import numpy as np
-import pandas as pd
-import eland as ed
 from elastic import Elastic
-from utils import save_json_cache, unique_clean_list, assign_empty_list
+from utils import unique_clean_list, assign_empty_list
 from constants import STREAM_TYPES
-from analysis.cache import update_streams_cache
 from analytics import fetch_stream_analytics
 
 

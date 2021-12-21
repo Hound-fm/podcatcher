@@ -8,6 +8,7 @@ from analysis import scan
 from stats import fetch_stats
 from status import main_status
 from vocabulary import update_music_genres
+from feed import update_root_feed
 
 # Main command
 @click.group()
@@ -57,7 +58,13 @@ def update():
     update_music_genres()
 
 
-# Drop all data
+# Sync collections on lbry channel
 @cli.command()
 def collections():
     sync_collections_metadata()
+
+
+# Sync collections on lbry channel
+@cli.command()
+def feed():
+    update_root_feed()

@@ -22,6 +22,12 @@ def unique_clean_list(x):
     return series
 
 
+def drop_consecutive(df, columns):
+    de_dup = df.copy()
+    de_dup = de_dup.loc[(de_dup[columns].shift() != de_dup[columns]).any(axis=1)]
+    return de_dup
+
+
 def safe_date(date_value):
     return (
         pd.to_datetime(date_value)

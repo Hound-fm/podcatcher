@@ -374,3 +374,33 @@ def sync_metadata(df_ref_streams, df_ref_channels, max_chunk_size=90):
 
     # Return new dataframe
     return {"streams": df_streams_metadata, "channels": df_channels_metadata}
+
+
+# repost / tip / support author
+def sync_author_metadata(claim_ids, max_chunk_size=90):
+    # Dataframes
+    df_channels_metadata = pd.DataFrame()
+    streams_urls = df_ref_streams["url"].unique()
+
+    # Initial chunk
+    chunks = [streams_urls]
+    chunk_index = 0
+
+    # No data to sync
+    if not (len(streams_ids)):
+        return False
+
+    total_ids = len(streams_ids)
+
+    if total_ids > max_chunk_size:
+        chunks = np.array_split(streams_urls, int(total_urls / max_chunk_size))
+
+    for chunk in chunks:
+        chunk_ids = list(chunk)
+        chunk_index += 1
+        if not len(chunk_ids):
+            continue
+        console.update_status(
+            f"[green] --- Syncing metadata subset chunk ~ ({len(chunks)}/{chunk_index})"
+        )
+        print(chunk_ids)

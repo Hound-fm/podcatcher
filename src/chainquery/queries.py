@@ -58,6 +58,20 @@ def filter_invalid_streams():
     )
 
 
+# Filter invalid audio streams:
+def filter_invalid_reposts():
+    return Criterion.all(
+        [
+            # Filter expired claims
+            filter_bid_state(),
+            # Filter anonymous content
+            claim.publisher_id.notnull(),
+            # Blocked channels
+            claim.publisher_id.notin(BLOCKED_CHANNELS),
+        ]
+    )
+
+
 # Filter invalid channels
 def filter_invalid_channels():
     return Criterion.all(
@@ -105,6 +119,26 @@ def bulk_fetch_streams():
         filter_by_content_type() & filter_by_audio_duration() & filter_invalid_streams()
     )
 
+    # returns new query
+    return q
+
+
+# Query for fetching reposts
+def bulk_fetch_reposts(claim_list):
+    # Basic query
+    q = (
+        Query.from_(claim)
+        .select(
+            claim.created_at.as_("event_date"),
+            claim.claim_reference.as_("event_stream_id"),
+            claim.publisher_id.as_("author_id"),
+        )
+        .where(
+            (claim.type == "claimreference")
+            & claim.claim_reference.isin(claim_list)
+            & filter_invalid_reposts()
+        )
+    )
     # returns new query
     return q
 
