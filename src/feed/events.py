@@ -1,5 +1,6 @@
 import pandas as pd
 from utils import drop_consecutive
+from sync import sync_author_metadata
 from chainquery import query, queries
 
 
@@ -7,7 +8,8 @@ def fetch_reposts_df(stream_ids):
     results = query(queries.bulk_fetch_reposts(list(stream_ids)))
     if results and len(results) > 0:
         df_reposts = pd.DataFrame.from_records(results)
-        print(df_reposts)
+        df_authors = sync_author_metadata(df_reposts["author_id"].unique())
+        print(df_authors)
 
 
 def process_repost_events(df_stream):

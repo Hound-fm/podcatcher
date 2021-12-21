@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from lbry import lbry_proxy
+from lbry import lbry_proxy, filtered_outpoints
 from utils import load_df_cache
 from logger import console
 import collections
@@ -376,24 +376,36 @@ def sync_metadata(df_ref_streams, df_ref_channels, max_chunk_size=90):
     return {"streams": df_streams_metadata, "channels": df_channels_metadata}
 
 
+def get_thumbnail(item):
+    if "thumbnail" in item and "url" in item["thumbnail"]:
+        return item["thumbnail"]["url"]
+    else:
+        return ""
+
+
+def get_title(item):
+    if "title" in item:
+        return item["title"]
+    return ""
+
+
 # repost / tip / support author
 def sync_author_metadata(claim_ids, max_chunk_size=90):
     # Dataframes
     df_channels_metadata = pd.DataFrame()
-    streams_urls = df_ref_streams["url"].unique()
 
     # Initial chunk
-    chunks = [streams_urls]
+    chunks = [claim_ids]
     chunk_index = 0
 
     # No data to sync
-    if not (len(streams_ids)):
+    total_ids = len(claim_ids)
+
+    if not total_ids:
         return False
 
-    total_ids = len(streams_ids)
-
     if total_ids > max_chunk_size:
-        chunks = np.array_split(streams_urls, int(total_urls / max_chunk_size))
+        chunks = np.array_split(claim_ids, int(total_ids / max_chunk_size))
 
     for chunk in chunks:
         chunk_ids = list(chunk)
@@ -403,4 +415,38 @@ def sync_author_metadata(claim_ids, max_chunk_size=90):
         console.update_status(
             f"[green] --- Syncing metadata subset chunk ~ ({len(chunks)}/{chunk_index})"
         )
-        print(chunk_ids)
+        # Sdk api request
+        payload = {"claim_ids": chunk_ids}
+        res = lbry_proxy("claim_search", payload)
+        if res and "result" in res and "items" in res["result"]:
+            df_authors = pd.DataFrame.from_records(res["result"]["items"])
+            df_authors["author_id"] = df_authors["claim_id"]
+            df_authors["author_url"] = df_authors["short_url"]
+            df_authors["author_url"] = df_authors["short_url"].str.replace(
+                "lbry://", ""
+            )
+            df_authors["author_url"] = df_authors["short_url"].str.replace("#", ":")
+            df_authors["author_name"] = df_authors["name"]
+            df_authors["author_title"] = df_authors["value"].apply(get_title)
+            df_authors["author_thumbnail"] = df_authors["value"].apply(get_thumbnail)
+            df_authors["outpoint"] = (
+                df_authors["txid"] + ":" + df_authors["nout"].astype(str)
+            )
+            df_authors = df_authors[df_authors["claim_op"].notnull()]
+            df_authors = df_authors[
+                [
+                    "outpoint",
+                    "author_id",
+                    "author_url",
+                    "author_name",
+                    "author_title",
+                    "author_thumbnail",
+                ]
+            ]
+
+            # Filter blocked channels
+            if filtered_outpoints and len(filtered_outpoints) > 0:
+                filter_mask = ~df_authors.outpoint.isin(filtered_outpoints)
+                df_authors = df_authors.loc[filter_mask]
+
+            return df_authors
