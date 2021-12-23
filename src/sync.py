@@ -389,20 +389,91 @@ def get_title(item):
     return ""
 
 
-# repost / tip / support author
-def sync_author_metadata(claim_ids, max_chunk_size=90):
-    # Dataframes
-    df_channels_metadata = pd.DataFrame()
+def get_effective_amount(item):
+    if "effective_amount" in item:
+        return item["effective_amount"]
 
+
+def sync_author_metadata(chunk_ids, page=1):
+    # Sdk api request
+    payload = {"claim_ids": chunk_ids, "page_size": 50, "page": page}
+    res = lbry_proxy("claim_search", payload)
+    df_authors_chunk = pd.DataFrame()
+
+    if res and "result" in res and "items" in res["result"]:
+        df_authors_chunk = pd.DataFrame.from_records(res["result"]["items"])
+        df_authors_chunk["author_id"] = df_authors_chunk["claim_id"]
+        df_authors_chunk["author_url"] = df_authors_chunk["canonical_url"].str.replace(
+            "lbry://", ""
+        )
+        df_authors_chunk["author_url"] = df_authors_chunk["author_url"].str.replace(
+            "#", ":"
+        )
+        df_authors_chunk["author_name"] = df_authors_chunk["name"]
+
+        df_authors_chunk["author_title"] = df_authors_chunk["value"].apply(get_title)
+        df_authors_chunk.loc[
+            df_authors_chunk["author_title"] == "", "author_title"
+        ] = df_authors_chunk["author_name"].str.replace("@", "")
+        df_authors_chunk["author_thumbnail"] = df_authors_chunk["value"].apply(
+            get_thumbnail
+        )
+        df_authors_chunk["outpoint"] = (
+            df_authors_chunk["txid"] + ":" + df_authors_chunk["nout"].astype(str)
+        )
+
+        df_authors_chunk["effective_amount"] = df_authors_chunk["meta"].apply(
+            get_effective_amount
+        )
+        df_authors_chunk["effective_amount"] = pd.to_numeric(
+            df_authors_chunk["effective_amount"]
+        )
+
+        # Channel tier filter:
+        # The value will increase as spam increases (Fake channels, bots, etc..)
+        df_authors_chunk = df_authors_chunk.loc[
+            df_authors_chunk.effective_amount >= 0.1
+        ]
+
+        # Active channels
+        df_authors_chunk = df_authors_chunk[df_authors_chunk["claim_op"].notnull()]
+
+        # Filter blocked channels
+        if filtered_outpoints and len(filtered_outpoints) > 0:
+            filter_mask = ~df_authors_chunk.outpoint.isin(filtered_outpoints)
+            df_authors_chunk = df_authors_chunk.loc[filter_mask]
+
+        # Extract relevant author data
+        df_authors_chunk = df_authors_chunk[
+            [
+                "author_id",
+                "author_url",
+                "author_name",
+                "author_title",
+                # "author_thumbnail",
+            ]
+        ]
+        return {
+            "chunk": df_authors_chunk,
+            "total_pages": res["result"].get("total_pages", 0),
+        }
+    # Return empty data
+    return {
+        "chunk": df_authors_chunk,
+        "total_pages": 0,
+    }
+
+
+# repost / tip / support author
+def sync_authors(claim_ids, max_chunk_size=30):
+    # Initial dataframe
+    df_authors = pd.DataFrame()
     # Initial chunk
     chunks = [claim_ids]
     chunk_index = 0
 
     # No data to sync
     total_ids = len(claim_ids)
-
-    if not total_ids:
-        return False
 
     if total_ids > max_chunk_size:
         chunks = np.array_split(claim_ids, int(total_ids / max_chunk_size))
@@ -415,38 +486,25 @@ def sync_author_metadata(claim_ids, max_chunk_size=90):
         console.update_status(
             f"[green] --- Syncing metadata subset chunk ~ ({len(chunks)}/{chunk_index})"
         )
-        # Sdk api request
-        payload = {"claim_ids": chunk_ids}
-        res = lbry_proxy("claim_search", payload)
-        if res and "result" in res and "items" in res["result"]:
-            df_authors = pd.DataFrame.from_records(res["result"]["items"])
-            df_authors["author_id"] = df_authors["claim_id"]
-            df_authors["author_url"] = df_authors["short_url"]
-            df_authors["author_url"] = df_authors["short_url"].str.replace(
-                "lbry://", ""
-            )
-            df_authors["author_url"] = df_authors["short_url"].str.replace("#", ":")
-            df_authors["author_name"] = df_authors["name"]
-            df_authors["author_title"] = df_authors["value"].apply(get_title)
-            df_authors["author_thumbnail"] = df_authors["value"].apply(get_thumbnail)
-            df_authors["outpoint"] = (
-                df_authors["txid"] + ":" + df_authors["nout"].astype(str)
-            )
-            df_authors = df_authors[df_authors["claim_op"].notnull()]
-            df_authors = df_authors[
-                [
-                    "outpoint",
-                    "author_id",
-                    "author_url",
-                    "author_name",
-                    "author_title",
-                    "author_thumbnail",
-                ]
-            ]
+        metadata_chunk = sync_author_metadata(chunk_ids, 1)
+        df_authors_chunk = metadata_chunk["chunk"]
 
-            # Filter blocked channels
-            if filtered_outpoints and len(filtered_outpoints) > 0:
-                filter_mask = ~df_authors.outpoint.isin(filtered_outpoints)
-                df_authors = df_authors.loc[filter_mask]
+        if not df_authors_chunk.empty:
+            if df_authors.empty:
+                df_authors = df_authors_chunk
+            else:
+                df_authors = pd.concat(
+                    [df_authors, df_authors_chunk], ignore_index=True
+                )
 
-            return df_authors
+        # Fetch next page
+        if not df_authors.empty and metadata_chunk["total_pages"] > 1:
+            for sub_chunk_index in range(2, metadata_chunk["total_pages"] + 1):
+                next_metadata_chunk = sync_author_metadata(chunk_ids, sub_chunk_index)
+                next_df_authors_chunk = next_metadata_chunk["chunk"]
+                if not next_df_authors_chunk.empty:
+                    df_authors = pd.concat(
+                        [df_authors, next_df_authors_chunk], ignore_index=True
+                    )
+
+    return df_authors
