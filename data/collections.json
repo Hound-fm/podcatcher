@@ -2,6 +2,7 @@
   "community-picks": {
     "description": "Awesome music curated by humans",
     "claims": [
+      "7c0e01773e83356498420a6017e3291886b0c0d2",
       "e685c1b9fd6e5a9f4268f3710cb46b727ef36767",
       "afe3327c7489583c99ce1d52e3f1306c455da044",
       "65d3528b507a8cf72d13b05bd23af56b0f534b13",
@@ -44,6 +45,7 @@
   "featured-artists": {
     "description": "Discover your next favorite artist",
     "claims": [
+      "7837f455d526d33ce8cf2373161e01edd1babd2d",
       "38bbf8cd09c8356cb63396fd14d885ff1c3616d8",
       "f28dde642e1ad77a96b6bc5608ee557f7a9f9453",
       "ffb5825e38c53b403bc2564771928f8756f4f21d",
