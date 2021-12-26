@@ -50,7 +50,6 @@ def process_repost_events(df_stream):
     df_events.event_date = pd.to_datetime(
         df_events.event_date, infer_datetime_format=True, unit="ns", utc=True
     )
-    print(df_events.event_date)
     return df_events
 
 
@@ -81,5 +80,4 @@ def process_publish_events(df_stream):
     df_events.event_date = pd.to_datetime(
         df_events.event_date, infer_datetime_format=True, unit="s", utc=True
     )
-    print(df_events.event_date)
     return df_events
