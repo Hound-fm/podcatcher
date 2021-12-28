@@ -9,6 +9,7 @@ from stats import fetch_stats
 from status import main_status
 from vocabulary import update_music_genres
 from feed import update_root_feed
+from analysis.description import get_artist_score
 
 # Main command
 @click.group()
@@ -52,7 +53,7 @@ def drop():
     Elastic().destroy_data()
 
 
-# Drop all data
+# Update music genres from musicbrainz.org
 @cli.command()
 def update():
     update_music_genres()
@@ -64,7 +65,7 @@ def collections():
     sync_collections_metadata()
 
 
-# Sync collections on lbry channel
+# Update feed
 @cli.command()
 def feed():
     update_root_feed()

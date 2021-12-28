@@ -111,15 +111,20 @@ def process_dataset_chunk():
     # Get updated metadata from sdk
     metadata = sync_metadata(chunk.df_streams, chunk.df_channels)
 
-    # Sdk failed
+    # No relevant data found by sdk. Skip further analysis
     if (
         not metadata
         or (not metadata.keys() & {"streams", "channels"})
         or metadata["streams"].empty
         or metadata["channels"].empty
     ):
-        print("sdk failed?")
-        return False
+        console.warning(
+            "SYNC",
+            f"Dataset chunk {dataset_chunk_index}",
+            action="No metadata found.",
+            stop_status=True,
+        )
+        return True
 
     console.info(
         "SYNC",

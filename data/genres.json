@@ -77,6 +77,8 @@
     ]
   },
   "MUSIC_ALIAS": {
+    "hip hop": ["hip-hop", "hiphop"],
+    "jazz": ["jazzy"],
     "chill": [
       "chillout",
       "chill out",
