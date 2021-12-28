@@ -120,6 +120,7 @@ def sync_channels_metadata(channels_ids, channels_metadata={}):
     ids = np.array([], dtype=np.str_)
     status = np.array([], dtype=np.str_)
     thumbnails = np.array([], dtype=np.str_)
+    descriptions = np.array([], dtype=np.str_)
 
     # Sdk api request
     for channel_id in channels_ids:
@@ -131,6 +132,7 @@ def sync_channels_metadata(channels_ids, channels_metadata={}):
             claim_tags = []
             claim_status = "spent"
             claim_languages = []
+            claim_description = 0
             creation_date = 0
             # Get claim status
             if "claim_op" in metadata:
@@ -152,6 +154,8 @@ def sync_channels_metadata(channels_ids, channels_metadata={}):
             # Get claim value metadata
             if "value" in metadata:
                 value = metadata["value"]
+                if "description" in value:
+                    claim_description = value["description"]
                 if "languages" in value:
                     claim_languages = value["languages"]
                 if "tags" in value:
@@ -163,6 +167,7 @@ def sync_channels_metadata(channels_ids, channels_metadata={}):
             ids = np.append(ids, channel_id)
             status = np.append(status, claim_status)
             thumbnails = np.append(thumbnails, thumbnail)
+            descriptions = np.append(descriptions, claim_description)
             # Use normal python list for nested lists
             tags.append(claim_tags)
             languages.append(claim_languages)
@@ -176,6 +181,7 @@ def sync_channels_metadata(channels_ids, channels_metadata={}):
     df_results["languages"] = languages
     df_results["thumbnail"] = thumbnails
     df_results["creation_date"] = creation_dates
+    # df_results["description"] = descriptions
 
     # Return new dataframe
     return df_results
