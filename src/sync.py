@@ -132,7 +132,7 @@ def sync_channels_metadata(channels_ids, channels_metadata={}):
             claim_tags = []
             claim_status = "spent"
             claim_languages = []
-            claim_description = 0
+            claim_description = ""
             creation_date = 0
             # Get claim status
             if "claim_op" in metadata:
@@ -181,7 +181,7 @@ def sync_channels_metadata(channels_ids, channels_metadata={}):
     df_results["languages"] = languages
     df_results["thumbnail"] = thumbnails
     df_results["creation_date"] = creation_dates
-    # df_results["description"] = descriptions
+    df_results["description"] = descriptions
 
     # Return new dataframe
     return df_results

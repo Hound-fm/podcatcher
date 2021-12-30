@@ -77,6 +77,7 @@
     ]
   },
   "MUSIC_ALIAS": {
+    "heavy metal": ["heavy", "heavy-metal"],
     "hip hop": ["hip-hop", "hiphop"],
     "jazz": ["jazzy"],
     "chill": [

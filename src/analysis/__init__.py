@@ -139,6 +139,8 @@ def process_dataset_chunk():
     )
 
     # Process channels
+    # Default score
+    chunk.df_channels["channel_metadata_score"] = 0
     chunk.df_channels = process_channels(chunk.df_channels)
 
     # No relevant data found. Skip further analysis.
@@ -147,6 +149,7 @@ def process_dataset_chunk():
 
     # Process all streams
     chunk.df_streams = process_streams(chunk.df_streams)
+
     # Merge channel data
     chunk.df_streams = pd.merge(
         chunk.df_streams,
@@ -157,10 +160,24 @@ def process_dataset_chunk():
                 "channel_title",
                 "channel_type",
                 "channel_url",
+                "channel_metadata_score",
             ]
         ],
         on="channel_id",
     )
+
+    df_unlicensed = ~chunk.df_streams.license.notnull() | chunk.df_streams.license.isin(
+        ["None", "none", ""]
+    )
+
+    # Auto-fill license for trusted channels based on metadata score
+    chunk.df_streams.loc[
+        df_unlicensed & (chunk.df_streams.channel_metadata_score >= 0.85), "license"
+    ] = "All rights reserved."
+
+    # Remove metadata score
+    chunk.df_streams = chunk.df_streams.drop(columns=["channel_metadata_score"])
+    chunk.df_channels = chunk.df_channels.drop(columns=["channel_metadata_score"])
 
     # Simplify column names
     chunk.df_channels.rename(columns={"channel_url": "url"}, inplace=True)

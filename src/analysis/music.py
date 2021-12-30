@@ -67,7 +67,7 @@ def process_music(chunk):
         ["None", "none", ""]
     )
 
-    # Auto fill missing unlicensed for truested artists:
+    # Auto-fill missing license for truested artists:
     df_tracks.loc[
         missing_license & is_artist(df_tracks), "license"
     ] = "All rights reserved."

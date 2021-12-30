@@ -6,29 +6,18 @@ from vocabulary import MULTILINGUAL
 from .tags import process_tags
 from .music import is_artist
 from .podcasts import is_podcast_series
+from .description import test_desc_analysis
 
 
 def process_channels(df):
     # Check channel type
     df_channels = df.copy()
 
-    # Process channels tags
-    df_tags = process_tags(df_channels, "channel")
-
-    # Merge tags data
-    df_channels = df_channels.drop(columns="tags")
-    df_channels = pd.merge(df_channels, df_tags, on="channel_id")
-
-    # Fix untagged content
-    df_channels.loc[is_artist(df_channels), "channel_type"] = CHANNEL_TYPE["MUSIC"]
-    df_channels.loc[is_podcast_series(df_channels), "channel_type"] = CHANNEL_TYPE[
-        "PODCAST"
-    ]
-
-    # Filter uknown types
-    # Note: All channels should have a valid type ( artist or podcast_series )
+    # Early filters
+    # All channels must have a valid title
+    df_channels["channel_title"] = df_channels["channel_title"].astype(str)
     df_channels = df_channels.loc[
-        df_channels["channel_type"].notnull() & df_channels["channel_title"].notnull()
+        df_channels["channel_title"].notnull() & (df_channels["channel_title"] != "")
     ]
 
     # Filter no thumbnails
@@ -50,5 +39,65 @@ def process_channels(df):
             "|".join(MULTILINGUAL["MUSIC"]), case=False
         )
     ]
+
+    # Prevent further analysis
+    if df_channels.empty:
+        return df_channels
+
+    # Process channels tags
+    df_tags = process_tags(df_channels, "channel")
+
+    # Merge tags data
+    df_channels = df_channels.drop(columns="tags")
+    df_channels = pd.merge(df_channels, df_tags, on="channel_id")
+
+    if df_channels.empty:
+        return df_channels
+
+    # Fix untagged content
+    df_channels.loc[is_artist(df_channels), "channel_type"] = CHANNEL_TYPE["MUSIC"]
+    df_channels.loc[is_podcast_series(df_channels), "channel_type"] = CHANNEL_TYPE[
+        "PODCAST"
+    ]
+
+    # Untagged content
+    df_untagged = df_channels[~df_channels["channel_type"].notnull()].copy()
+
+    if not df_untagged.empty:
+        # Extract metadata from description
+        df_description_metadata = test_desc_analysis(df_untagged)
+        df_channels = df_channels.drop(columns=["description"])
+        if not df_description_metadata.empty:
+            # Merge metadata from description
+            df_channels = pd.merge(
+                df_channels, df_description_metadata, on="channel_id", how="left"
+            )
+
+            merged_columns = ["channel_type", "channel_metadata_score", "genres"]
+
+            for merged_column in merged_columns:
+                prefixed_x = merged_column + "_x"
+                prefixed_y = merged_column + "_y"
+
+                if {prefixed_x, prefixed_y}.issubset(df_channels.columns):
+                    # Remove prefix
+                    df_channels = df_channels.rename(
+                        columns={f"{prefixed_x}": merged_column}
+                    )
+                    # Use new values
+                    if merged_column == "channel_metadata_score":
+                        df_channels.loc[
+                            df_channels[merged_column] <= 0, merged_column
+                        ] = df_channels[prefixed_y]
+                    else:
+                        df_channels.loc[
+                            ~df_channels[merged_column].notnull(), merged_column
+                        ] = df_channels[prefixed_y]
+                    # Drop unecessary columns
+                    df_channels = df_channels.drop(columns=prefixed_y)
+
+    # Filter uknown types
+    # Note: All channels should have a valid type ( artist or podcast_series )
+    df_channels = df_channels.loc[df_channels["channel_type"].notnull()]
 
     return df_channels
