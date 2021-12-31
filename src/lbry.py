@@ -1,4 +1,4 @@
-["ODYSEE_API"]  # WARNING: Low peformance and some litimations.
+# WARNING: Low peformance and some litimations.
 # TODO: Migrate to custom "Hub" and discard any external api usage.
 # https://github.com/lbryio/hub
 
