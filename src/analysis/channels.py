@@ -6,7 +6,7 @@ from vocabulary import MULTILINGUAL
 from .tags import process_tags
 from .music import is_artist
 from .podcasts import is_podcast_series
-from .description import test_desc_analysis
+from .description import process_channel_description
 
 
 def process_channels(df):
@@ -23,7 +23,7 @@ def process_channels(df):
     # Filter no thumbnails
     # Note: All channels should have a thumbnail
     # Note: Only channels on safe list will ignore this filter.
-    # Todo: For creators with blindness or vision impairment is probably not a good idea to enforce this.
+    # For creators with blindness or vision impairment is probably not a good idea to enforce this.
     df_channels = df_channels.loc[
         is_artist(df_channels) | df_channels["thumbnail"].str.strip().astype(bool)
     ]
@@ -40,7 +40,7 @@ def process_channels(df):
         )
     ]
 
-    # Prevent further analysis
+    # Skip further analysis
     if df_channels.empty:
         return df_channels
 
@@ -63,10 +63,12 @@ def process_channels(df):
     # Untagged content
     df_untagged = df_channels[~df_channels["channel_type"].notnull()].copy()
 
+    # Analysis for untagged content
     if not df_untagged.empty:
         # Extract metadata from description
-        df_description_metadata = test_desc_analysis(df_untagged)
+        df_description_metadata = process_channel_description(df_untagged)
         df_channels = df_channels.drop(columns=["description"])
+
         if not df_description_metadata.empty:
             # Merge metadata from description
             df_channels = pd.merge(

@@ -13,30 +13,55 @@ def clamp(minvalue, value, maxvalue):
     return max(minvalue, min(value, maxvalue))
 
 
-def language_detection(text):
+def nlp_multilingual(text):
     result = detect(text=text, low_memory=True)
-    if result and "lang" in result:
-        return result["lang"]
+    if "lang" in result:
+        lang = result["lang"]
+        # French
+        if lang == "fr":
+            return nlp_fr(text)
+        # German
+        elif lang == "de":
+            return nlp_de(text)
+        # Spanish
+        elif lang == "es":
+            return nlp_es(text)
+    # Default to english
+    return nlp_en(text)
 
 
-def get_artist_score(row):
+def get_stream_metadata_score(row):
     series_row = row.copy()
     text = str(series_row["description"])
     genres = set(series_row["genres"])
+    score_boost = 0
+
     # Validate description text
     if not text:
         return series_row
-    # Detect language
-    lang = language_detection(text)
-    # Tagging
-    if lang == "fr":
-        doc = nlp_fr(text)
-    elif lang == "de":
-        doc = nlp_de(text)
-    elif lang == "es":
-        doc = nlp_es(text)
-    else:
-        doc = nlp_en(text)
+
+    # spaCy: Part-of-speech tagging
+    doc = nlp_multilingual(text)
+
+    # Score boost by short description
+    if len(text) < 200:
+        score_boost += 0.5
+
+    return series_row
+
+
+def get_channel_metadata_score(row):
+    series_row = row.copy()
+    text = str(series_row["description"])
+    genres = set(series_row["genres"])
+
+    # Validate description text
+    if not text:
+        return series_row
+
+    # spaCy: Part-of-speech tagging
+    doc = nlp_multilingual(text)
+
     # Default values
     music_genres = set()
     # Score values
@@ -118,12 +143,12 @@ def get_artist_score(row):
     series_row["channel_metadata_score"] = score
 
     # if score >= 0.6:
-    # print(series_row[["channel_id", "channel_title", "channel_metadata_score"]])
+    #   print(series_row[["channel_id", "channel_title", "channel_metadata_score"]])
 
     return series_row
 
 
-def test_desc_analysis(df):
+def process_channel_description(df):
     # Copy relevant columns
     df_nlp = df[
         [
@@ -160,6 +185,47 @@ def test_desc_analysis(df):
     df_nlp["description"] = df_nlp["description"].str.strip()
 
     # Run analysis for each row
-    df_nlp = df_nlp.apply(get_artist_score, axis=1)
+    df_nlp = df_nlp.apply(get_channel_metadata_score, axis=1)
 
     return df_nlp[["channel_id", "channel_type", "channel_metadata_score", "genres"]]
+
+
+def process_stream_description(df):
+    # Copy relevant columns
+    df_nlp = df[
+        [
+            "title",
+            "stream_id",
+            "channel_type",
+            "channel_title",
+            "description",
+            "genres",
+        ]
+    ].copy()
+
+    # Filters
+    # Filter empty or invalid descriptions
+    # Longer descriptions provide more info:
+    MIN_DESCRIPTION_LENGTH = 15
+    df_nlp = df_nlp.loc[df_nlp.description.notnull()]
+    df_nlp.description = df_nlp.description.astype(str).str.strip()
+    df_nlp = df_nlp.loc[
+        (df_nlp.description != "")
+        & (df_nlp.description.str.len() > MIN_DESCRIPTION_LENGTH)
+    ]
+
+    if df_nlp.empty:
+        return df_nlp
+
+    # Format description
+    df_nlp["description"] = df_nlp["description"].str.replace(r"\s\s+", " ", regex=True)
+    df_nlp["description"] = df_nlp["description"].str.replace(r"[\r\n]", "", regex=True)
+    df_nlp["description"] = df_nlp["description"].str.strip()
+
+    # Initialize metadata score
+    df_nlp["stream_metadata_score"] = 0
+
+    # Run analysis for each row
+    df_nlp = df_nlp.apply(get_stream_metadata_score, axis=1)
+
+    return df_nlp[["stream_id", "stream_metadata_score", "genres"]]
