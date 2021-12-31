@@ -141,6 +141,7 @@ def get_channel_metadata_score(row):
 
     # Update score
     series_row["channel_metadata_score"] = score
+    # print(series_row["channel_id"], series_row["channel_title"], score)
 
     # if score >= 0.6:
     #   print(series_row[["channel_id", "channel_title", "channel_metadata_score"]])
