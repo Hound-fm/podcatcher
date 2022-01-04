@@ -66,7 +66,20 @@ def update_stream_analytics():
     el.append_df("stream", df_stream)
 
 
+def print_general_stats():
+    el = Elastic()
+    df_channels = el.get_df("channel", None)
+    df_artists = df_channels[df_channels["channel_type"] == "artist"]
+    df_podcasts = df_channels[df_channels["channel_type"] == "podcast_series"]
+    print("Artists: ", len(df_artists), "Podcasts: ", len(df_podcasts))
+    df_streams = el.get_df("stream", None)
+    df_songs = df_streams[df_streams["stream_type"] == "music_recording"]
+    df_episodes = df_streams[df_streams["stream_type"] == "podcast_episode"]
+    print("Songs: ", len(df_songs), "Episodes: ", len(df_episodes))
+
+
 def fetch_stats():
+    # print_general_stats()
     for stream_type in STREAM_TYPES:
         # Update genre index
         update_stream_genres(stream_type)

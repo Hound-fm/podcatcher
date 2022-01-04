@@ -40,6 +40,18 @@ def process_channels(df):
         )
     ]
 
+    # Filter empty or invalid descriptions
+    MIN_DESCRIPTION_LENGTH = 5
+    df_channels = df_channels.loc[keep_safe_list | df_channels.description.notnull()]
+    df_channels.description = df_channels.description.astype(str).str.strip()
+    df_channels = df_channels.loc[
+        keep_safe_list
+        | (
+            (df_channels.description != "")
+            & (df_channels.description.str.len() > MIN_DESCRIPTION_LENGTH)
+        )
+    ]
+
     # Skip further analysis
     if df_channels.empty:
         return df_channels
@@ -90,6 +102,10 @@ def process_channels(df):
                     if merged_column == "channel_metadata_score":
                         df_channels.loc[
                             df_channels[merged_column] <= 0, merged_column
+                        ] = df_channels[prefixed_y]
+                    if merged_column == "genres":
+                        df_channels.loc[
+                            df_channels[prefixed_y].notnull(), merged_column
                         ] = df_channels[prefixed_y]
                     else:
                         df_channels.loc[

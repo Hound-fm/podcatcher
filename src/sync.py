@@ -207,6 +207,7 @@ def sync_claims_metadata(streams_urls, channels_ids):
     thumbnails = np.array([], dtype=np.str_)
     fee_amount = np.array([], dtype=np.float64)
     fee_currency = np.array([], dtype=np.str_)
+    descriptions = np.array([], dtype=np.str_)
 
     # Sdk api request
     payload = {"urls": streams_urls}
@@ -229,6 +230,7 @@ def sync_claims_metadata(streams_urls, channels_ids):
             claim_id = ""
             claim_tags = []
             release_date = 0
+            claim_description = ""
             claim_status = "spent"
             claim_license = ""
             claim_reposted = 0
@@ -286,6 +288,8 @@ def sync_claims_metadata(streams_urls, channels_ids):
                 if "thumbnail" in value:
                     if "url" in value["thumbnail"]:
                         thumbnail = value["thumbnail"]["url"]
+                if "description" in value:
+                    claim_description = value["description"]
                 # SDK returns release_date as string instead of int
                 # We need to convert it first:
                 if "release_time" in value:
@@ -299,6 +303,7 @@ def sync_claims_metadata(streams_urls, channels_ids):
             thumbnails = np.append(thumbnails, thumbnail)
             fee_amount = np.append(fee_amount, claim_fee["amount"])
             fee_currency = np.append(fee_currency, claim_fee["currency"])
+            descriptions = np.append(descriptions, claim_description)
             # Use normal python list for nested lists
             tags.append(claim_tags)
             languages.append(claim_languages)
@@ -315,6 +320,7 @@ def sync_claims_metadata(streams_urls, channels_ids):
     df_streams_metadata["fee_amount"] = fee_amount
     df_streams_metadata["fee_currency"] = fee_currency
     df_streams_metadata["release_date"] = release_dates
+    df_streams_metadata["description"] = descriptions
 
     # Fix data types:
     df_streams_metadata["fee_amount"] = df_streams_metadata["fee_amount"].astype(

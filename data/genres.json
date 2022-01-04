@@ -7,6 +7,10 @@
       "religion",
       "spirituality"
     ],
+    "politics": [
+      "government",
+      "parliamentary procedure"
+    ],
     "education": [
       "educational"
     ],
@@ -68,7 +72,8 @@
       "smartphone",
       "cryptocurrency",
       "software",
-      "programming"
+      "programming",
+      "pc"
     ],
     "health and fitness": [
       "meditation",
@@ -85,6 +90,7 @@
       "chill out",
       "chill-out"
     ],
+    "lo-fi hip hop": ["chillhop", "lofi hip hop", "lofi beats to study to"],
     "rock": [
       "rock and roll",
       "rock & roll"
@@ -114,8 +120,45 @@
       "doom wave",
       "darkwave",
       "dark-wave"
-    ]
+    ],
+    "drum and bass": [ "drumandbass", "drum&bass", "d&b", "dnb", "d'n'b"]
   },
+  "PODCAST": [
+    "arts",
+    "advice",
+    "business and finance",
+    "education",
+    "feminist",
+    "fiction",
+    "tv and film",
+    "food and drink",
+    "history",
+    "horror",
+    "interview",
+    "law",
+    "lgbt-related",
+    "mistery",
+    "mythology",
+    "memoir",
+    "news",
+    "philosophy",
+    "romance",
+    "science",
+    "science-fiction",
+    "sports",
+    "technology",
+    "thriller",
+    "games",
+    "comedy",
+    "leisure",
+    "society and culture",
+    "politics",
+    "travel",
+    "health and fitness",
+    "religion and spirituality",
+    "true-crime",
+    "psychology"
+  ],
   "MUSIC": [
     "2 tone",
     "2-step",
@@ -157,9 +200,6 @@
     "ars antiqua",
     "ars nova",
     "ars subtilior",
-    "art pop",
-    "art punk",
-    "art rock",
     "atmospheric black metal",
     "avant-folk",
     "avant-garde",
@@ -676,7 +716,6 @@
     "noise pop",
     "noise rock",
     "noisecore",
-    "non-music",
     "norte\\u00f1o",
     "northern soul",
     "nova can\\u00e7\\u00f3",
@@ -946,42 +985,5 @@
     "zolo",
     "zouk",
     "zydeco"
-  ],
-  "PODCAST": [
-    "arts",
-    "advice",
-    "business and finance",
-    "education",
-    "feminist",
-    "fiction",
-    "tv and film",
-    "food and drink",
-    "history",
-    "horror",
-    "interview",
-    "law",
-    "lgbt-related",
-    "music",
-    "mistery",
-    "mythology",
-    "memoir",
-    "news",
-    "philosophy",
-    "romance",
-    "science",
-    "science-fiction",
-    "sports",
-    "technology",
-    "thriller",
-    "games",
-    "comedy",
-    "leisure",
-    "society and culture",
-    "politics",
-    "travel",
-    "health and fitness",
-    "religion and spirituality",
-    "true-crime",
-    "psychology"
   ]
 }

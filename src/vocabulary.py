@@ -7,8 +7,7 @@ from logger import console
 MULTILINGUAL = {}
 MULTILINGUAL_PATH = os.path.join("data", "multilingual.json")
 
-
-with open(MULTILINGUAL_PATH, "r") as f:
+with open(MULTILINGUAL_PATH, "r", encoding="utf-8") as f:
     MULTILINGUAL = json.load(f)
 
 GENRES = {}

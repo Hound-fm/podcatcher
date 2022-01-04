@@ -9,7 +9,7 @@ from dataset import build_dataset_chunk
 from dataset.loader import Dataset_chunk_loader
 from status import main_status
 from .channels import process_channels
-from .streams import process_streams
+from .streams import process_streams, process_untagged_streams
 from .music import process_music
 from .podcasts import process_podcasts
 
@@ -139,7 +139,6 @@ def process_dataset_chunk():
     )
 
     # Process channels
-    # Default score
     chunk.df_channels["channel_metadata_score"] = 0
     chunk.df_channels = process_channels(chunk.df_channels)
 
@@ -148,6 +147,7 @@ def process_dataset_chunk():
         return True
 
     # Process all streams
+    chunk.df_streams["stream_metadata_score"] = 0
     chunk.df_streams = process_streams(chunk.df_streams)
 
     # Merge channel data
@@ -166,17 +166,24 @@ def process_dataset_chunk():
         on="channel_id",
     )
 
+    chunk.df_streams = process_untagged_streams(chunk.df_streams)
+
     df_unlicensed = ~chunk.df_streams.license.notnull() | chunk.df_streams.license.isin(
         ["None", "none", ""]
     )
 
     # Auto-fill license for trusted channels based on metadata score
     chunk.df_streams.loc[
-        df_unlicensed & (chunk.df_streams.channel_metadata_score >= 0.85), "license"
+        df_unlicensed
+        & chunk.df_streams.channel_type.notnull()
+        & (chunk.df_streams.channel_metadata_score > 0.85),
+        "license",
     ] = "All rights reserved."
 
     # Remove metadata score
-    chunk.df_streams = chunk.df_streams.drop(columns=["channel_metadata_score"])
+    chunk.df_streams = chunk.df_streams.drop(
+        columns=["channel_metadata_score", "stream_metadata_score"]
+    )
     chunk.df_channels = chunk.df_channels.drop(columns=["channel_metadata_score"])
 
     # Simplify column names
