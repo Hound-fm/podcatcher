@@ -182,9 +182,11 @@ def process_dataset_chunk():
 
     # Remove metadata score
     chunk.df_streams = chunk.df_streams.drop(
-        columns=["channel_metadata_score", "stream_metadata_score"]
+        columns=["channel_metadata_score", "stream_metadata_score", "description"]
     )
-    chunk.df_channels = chunk.df_channels.drop(columns=["channel_metadata_score"])
+    chunk.df_channels = chunk.df_channels.drop(
+        columns=["channel_metadata_score", "description"]
+    )
 
     # Simplify column names
     chunk.df_channels.rename(columns={"channel_url": "url"}, inplace=True)

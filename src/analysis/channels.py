@@ -79,7 +79,6 @@ def process_channels(df):
     if not df_untagged.empty:
         # Extract metadata from description
         df_description_metadata = process_channel_description(df_untagged)
-        df_channels = df_channels.drop(columns=["description"])
 
         if not df_description_metadata.empty:
             # Merge metadata from description

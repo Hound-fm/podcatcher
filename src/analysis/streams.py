@@ -18,7 +18,6 @@ def process_untagged_streams(df):
     if not df_untagged.empty:
         # Extract metadata from description
         df_description_metadata = process_stream_description(df_untagged)
-        df_streams = df_streams.drop(columns=["description"])
 
         if not df_description_metadata.empty:
             # Merge metadata from description

@@ -18,7 +18,8 @@ def is_artist(df):
 
 def format_artist_title(channel_title):
     # Format channel title:
-    artist_title = channel_title.str.strip()
+    artist_title = channel_title.astype(str)
+    artist_title = artist_title.str.strip()
     # Note: Adding "music" to the title is irrelevant and will be blocked by the filters.
     # Simplify artist name: "Mozart's Music" -> "Mozart"
     artist_title = artist_title.str.replace("'s music", "")
@@ -31,6 +32,7 @@ def format_artist_title(channel_title):
 
 def format_track_title(df_streams):
     df_tracks = df_streams.copy()
+    df_tracks.title = df_tracks.title.astype(str)
     df_tracks.title = df_tracks.title.str.strip()
     title_split = df_tracks.title.str.lower().str.split(pat=" - ", n=3).str
     title_raw_split = df_tracks.title.str.split(pat=" - ", n=3).str
