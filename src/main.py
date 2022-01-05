@@ -5,7 +5,7 @@ from elastic import Elastic
 from sync import sync_elastic_search, sync_collections_metadata
 from utils import remove_cache
 from analysis import scan
-from stats import fetch_stats
+from stats import fetch_stats, print_general_stats
 from status import main_status
 from vocabulary import update_music_genres
 from feed import update_root_feed
@@ -16,9 +16,16 @@ def cli():
     pass
 
 
+# Generate stats
 @cli.command()
 def stats():
     fetch_stats()
+
+
+# Show general stats
+@cli.command()
+def stats_info():
+    print_general_stats()
 
 
 # Initial sync
