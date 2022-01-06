@@ -169,16 +169,6 @@ def get_stream_metadata_score(row):
         elif podcast_score >= music_score:
             series_row["stream_metadata_score"] = podcast_score
 
-    if series_row["stream_metadata_score"] > 3:
-        print(
-            # series_row["stream_id"],
-            series_row["channel_title"],
-            series_row["title"],
-            series_row["channel_type"],
-            series_row["stream_type"],
-            series_row["stream_metadata_score"],
-        )
-
     return series_row
 
 
