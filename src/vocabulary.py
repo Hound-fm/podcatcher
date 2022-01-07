@@ -14,7 +14,7 @@ GENRES = {}
 GENRES_PATH = os.path.join("data", "genres.json")
 
 # Read file
-with open(GENRES_PATH, "r") as f:
+with open(GENRES_PATH, "r", encoding="utf-8") as f:
     GENRES = json.load(f)
 
 
@@ -33,8 +33,8 @@ def update_music_genres():
 
         if genres and len(genres) > 0:
             GENRES["MUSIC"] = genres
-            with open(GENRES_PATH, "wt") as f:
-                json.dump(GENRES, f, sort_keys=True, ensure_ascii=True, indent=2)
+            with open(GENRES_PATH, "wt", encoding="utf-8") as f:
+                json.dump(GENRES, f, sort_keys=True, ensure_ascii=False, indent=2)
 
     # Handle http request errors
     except httpx.HTTPStatusError as exc:
