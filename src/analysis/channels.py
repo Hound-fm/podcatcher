@@ -12,10 +12,22 @@ from .description import process_channel_description
 def process_channels(df):
     # Check channel type
     df_channels = df.copy()
-
     # Early filters
     # All channels must have a valid title
     df_channels["channel_title"] = df_channels["channel_title"].astype(str)
+
+    # Use channel name as title "@channel-name" -> "channel name"
+    df_channels.loc[
+        is_artist(df_channels)
+        & (
+            (~df_channels["channel_title"].notnull()) | df_channels["channel_title"]
+            == ""
+        ),
+        "channel_title",
+    ] = (
+        df_channels["channel_name"].str.replace("@", "").str.replace("-", " ")
+    )
+
     df_channels = df_channels.loc[
         df_channels["channel_title"].notnull() & (df_channels["channel_title"] != "")
     ]

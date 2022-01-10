@@ -111,6 +111,7 @@ class Dataset_chunk_loader:
             df_channels.channel_title.notnull()
             & (df_channels.channel_title.str.len() > 0)
         ]
+
         df_channels.channel_title = df_channels.channel_title.fillna("").astype(str)
 
         if df_channels.empty:

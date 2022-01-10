@@ -39,8 +39,8 @@ def filter_by_content_type(content_type=CONTENT_TYPE_AUDIO):
 
 
 # Filter all content by audio duration:
-# Default duration ( Longer than 1 minute )
-def filter_by_audio_duration(min=60):
+# Default duration ( Longer than 45 seconds )
+def filter_by_audio_duration(min=45):
     return Criterion.all([claim.audio_duration.notnull(), claim.audio_duration >= min])
 
 
