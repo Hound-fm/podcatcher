@@ -8,6 +8,7 @@ from lbry import filtered_outpoints
 from utils import load_df_cache, get_outpoints, now_timestamp
 from vocabulary import MULTILINGUAL
 from status import main_status
+from analysis.music import is_artist
 
 # Load block list
 with open(config["BLOCK_LIST"], "r") as f:
@@ -106,7 +107,20 @@ class Dataset_chunk_loader:
         if df_channels.empty:
             return df_channels
 
-        # Fix missing titles
+        # Fix missing titles of safelist:
+        # Use channel name as title "@channel-name" -> "channel name"
+        df_channels.loc[
+            is_artist(df_channels)
+            & (
+                (~df_channels["channel_title"].notnull()) | df_channels["channel_title"]
+                == ""
+            ),
+            "channel_title",
+        ] = (
+            df_channels["channel_name"].str.replace("@", "").str.replace("-", " ")
+        )
+
+        # Filter missing titles
         df_channels = df_channels[
             df_channels.channel_title.notnull()
             & (df_channels.channel_title.str.len() > 0)
