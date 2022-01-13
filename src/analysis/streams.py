@@ -79,7 +79,9 @@ def process_streams(df):
     df_streams.loc[
         df_streams.stream_type.isnull()
         & df_streams.title.str.contains(
-            "|".join(MULTILINGUAL["PODCAST"] + MULTILINGUAL["EPISODE"]), case=False
+            "|".join(MULTILINGUAL["PODCAST"] + MULTILINGUAL["EPISODE"]),
+            case=False,
+            regex=True,
         ),
         "stream_type",
     ] = STREAM_TYPE["PODCAST"]

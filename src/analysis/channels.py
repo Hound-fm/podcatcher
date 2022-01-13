@@ -9,6 +9,10 @@ from .podcasts import is_podcast_series
 from .description import process_channel_description
 
 
+def keep_safe_list(df):
+    return is_artist(df) | is_podcast_series(df)
+
+
 def process_channels(df):
     # Check channel type
     df_channels = df.copy()
@@ -32,9 +36,9 @@ def process_channels(df):
     # Filter suspicious channels ( "Free music", "All music", etc.. )
     # Note: Only channels on safe list will ignore this filter.
     # Todo: Add more keywords.
-    keep_safe_list = is_artist(df_channels) | is_podcast_series(df_channels)
+
     df_channels = df_channels.loc[
-        keep_safe_list
+        keep_safe_list(df_channels)
         | ~df_channels.channel_title.str.contains(
             "|".join(MULTILINGUAL["MUSIC"]), case=False
         )
@@ -42,10 +46,12 @@ def process_channels(df):
 
     # Filter empty or invalid descriptions
     MIN_DESCRIPTION_LENGTH = 5
-    df_channels = df_channels.loc[keep_safe_list | df_channels.description.notnull()]
+    df_channels = df_channels.loc[
+        keep_safe_list(df_channels) | df_channels.description.notnull()
+    ]
     df_channels.description = df_channels.description.astype(str).str.strip()
     df_channels = df_channels.loc[
-        keep_safe_list
+        keep_safe_list(df_channels)
         | (
             (df_channels.description != "")
             & (df_channels.description.str.len() > MIN_DESCRIPTION_LENGTH)

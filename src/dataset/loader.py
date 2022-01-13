@@ -109,24 +109,19 @@ class Dataset_chunk_loader:
 
         # Fix missing titles of safelist:
         # Use channel name as title "@channel-name" -> "channel name"
+        df_channels.channel_title = (
+            df_channels.channel_title.fillna("").astype(str).str.strip()
+        )
+
         df_channels.loc[
-            is_artist(df_channels)
-            & (
-                (~df_channels["channel_title"].notnull()) | df_channels["channel_title"]
-                == ""
-            ),
+            (is_artist(df_channels) & df_channels["channel_title"] == ""),
             "channel_title",
         ] = (
             df_channels["channel_name"].str.replace("@", "").str.replace("-", " ")
         )
 
         # Filter missing titles
-        df_channels = df_channels[
-            df_channels.channel_title.notnull()
-            & (df_channels.channel_title.str.len() > 0)
-        ]
-
-        df_channels.channel_title = df_channels.channel_title.fillna("").astype(str)
+        df_channels = df_channels[df_channels.channel_title.str.len() > 1]
 
         if df_channels.empty:
             return df_channels
