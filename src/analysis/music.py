@@ -29,6 +29,13 @@ def format_artist_title(channel_title):
     artist_title = artist_title.str.replace("'s music", "", case=False)
     # Simplify artist name: "Ludwig van Beethoven music" -> "Ludwig van Beethoven"
     artist_title = artist_title.str.replace(" music", "", case=False)
+
+    # Channel specific filters:
+
+    # https://odysee.com/@alsanchez1766:a?view=about
+    # a3a1c0baae9d9374972cc0ba7583227c1ad6fbeb
+    artist_title = artist_title.str.replace(" original and arts", "", case=False)
+
     return artist_title.str.strip()
 
 
@@ -40,11 +47,21 @@ def format_track_title(df_streams):
     df_tracks.title = df_tracks.title.str.replace("original music -", "", case=False)
     df_tracks.title = df_tracks.title.str.replace("music -", "", case=False)
     df_tracks.title = df_tracks.title.str.replace(
+        "(cc 4.0)", "", case=False, regex=False
+    )
+    df_tracks.title = df_tracks.title.str.replace(
         "(audio)", "", case=False, regex=False
     )
     df_tracks.title = df_tracks.title.str.replace(
         "(original)", "", case=False, regex=False
     )
+    df_tracks.title = df_tracks.title.str.replace(
+        "(original song)", "", case=False, regex=False
+    )
+    df_tracks.title = df_tracks.title.str.replace(
+        "(free to use music)", "", case=False, regex=False
+    )
+
     title_split = df_tracks.title.str.lower().str.split(pat=" - ", n=3).str
     title_raw_split = df_tracks.title.str.split(pat=" - ", n=3).str
     artist_title = df_tracks.channel_title.str.lower()
