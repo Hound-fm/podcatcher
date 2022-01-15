@@ -306,7 +306,6 @@
     "freak folk",
     "freakbeat",
     "free folk",
-    "free improvisation",
     "free jazz",
     "free tekno",
     "french house",
@@ -403,6 +402,7 @@
     "idol kayō",
     "illbient",
     "impressionism",
+    "improvisation",
     "indian pop",
     "indie",
     "indie folk",
@@ -830,6 +830,7 @@
     "zydeco"
   ],
   "MUSIC_ALIAS": {
+    "improvisation": ["free improvisation"],
     "alternative rock": [
       "alt-rock",
       "alternative",

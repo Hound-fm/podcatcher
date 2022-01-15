@@ -19,22 +19,25 @@ def is_artist(df):
 def format_artist_title(channel_title):
     # Format channel title:
     artist_title = channel_title.astype(str).str.strip()
-    # Note: Adding "music" to the title is irrelevant and will be blocked by the filters.
-    # Simplify artist name: "Music from Mozart" -> "Mozart"
-    artist_title = artist_title.str.replace("music from ", "", case=False)
+
+    # Remove extra stuff
+    artist_title = artist_title.str.replace("*musik", "", case=False, regex=False)
+
     artist_title = artist_title.str.replace(
         "[free to use music]", "", case=False, regex=False
     )
+
+    artist_title = artist_title.str.replace(" music & arts", "", case=False)
+    artist_title = artist_title.str.replace(" original and arts", "", case=False)
+
+    # Note: Adding "music" to the title is irrelevant and will be blocked by the filters.
+    # Simplify artist name: "Music from Mozart" -> "Mozart"
+    artist_title = artist_title.str.replace("music from ", "", case=False)
+
     # Simplify artist name: "Mozart's Music" -> "Mozart"
     artist_title = artist_title.str.replace("'s music", "", case=False)
     # Simplify artist name: "Ludwig van Beethoven music" -> "Ludwig van Beethoven"
     artist_title = artist_title.str.replace(" music", "", case=False)
-
-    # Channel specific filters:
-
-    # https://odysee.com/@alsanchez1766:a?view=about
-    # a3a1c0baae9d9374972cc0ba7583227c1ad6fbeb
-    artist_title = artist_title.str.replace(" original and arts", "", case=False)
 
     return artist_title.str.strip()
 
