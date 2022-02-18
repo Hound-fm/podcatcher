@@ -39,7 +39,7 @@ def query(q, options=default_query_options, retry=0):
         # Send the sql query as url parameter
         payload = {"query": queryString}
         # Initial request
-        res = httpx.get(config["CHAINQUERY_API"], params=payload, timeout=20.0)
+        res = httpx.get(config["CHAINQUERY_API"], params=payload, timeout=10.0)
         res.raise_for_status()
         # Parse response data to json
         res = res.json()
